@@ -199,10 +199,10 @@ const Home = () => {
           <motion.div
             className="moving-mosque"
             animate={{ 
-              x: [0, 50, 0, -50, 0],
-              y: [0, -20, 0, -15, 0]
+              scale: [1, 1.05, 1],
+              opacity: [0.9, 1, 0.9]
             }}
-            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           >
             <FaMosque />
           </motion.div>
@@ -219,16 +219,30 @@ const Home = () => {
             <p>Welcome to Your Spiritual Journey</p>
           </motion.div>
 
-          <motion.div
-            className="flying-bird"
-            animate={{ 
-              x: [0, 200, 400, 200, 0],
-              y: [0, -30, 10, -20, 0]
-            }}
-            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          >
-            <FaDove />
-          </motion.div>
+          {/* Multiple Flying Birds */}
+          {[...Array(3)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="flying-bird"
+              style={{
+                left: `${20 + i * 30}%`,
+                top: `${20 + (i % 2) * 30}%`
+              }}
+              animate={{ 
+                x: [0, 100, 200, 100, 0],
+                y: [0, -40, 20, -30, 0],
+                rotate: [0, 15, -15, 10, 0]
+              }}
+              transition={{ 
+                duration: 12 + i * 2, 
+                repeat: Infinity, 
+                delay: i * 2,
+                ease: "easeInOut"
+              }}
+            >
+              <FaDove />
+            </motion.div>
+          ))}
 
           {/* Floating Stars */}
           {[...Array(6)].map((_, i) => (

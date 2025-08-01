@@ -52,7 +52,34 @@ export const quranSurahs = [
     english: "The Cow",
     verses: 286,
     type: "Medinan",
-    audio: "https://server8.mp3quran.net/afs/002.mp3"
+    audio: "https://server8.mp3quran.net/afs/002.mp3",
+    text: [
+      {
+        verse: 1,
+        arabic: "الٓمٓ",
+        translation: "Alif, Lam, Meem."
+      },
+      {
+        verse: 2,
+        arabic: "ذَٰلِكَ الْكِتَابُ لَا رَيْبَ ۛ فِيهِ ۛ هُدًى لِّلْمُتَّقِينَ",
+        translation: "This is the Book about which there is no doubt, a guidance for those conscious of Allah."
+      },
+      {
+        verse: 3,
+        arabic: "الَّذِينَ يُؤْمِنُونَ بِالْغَيْبِ وَيُقِيمُونَ الصَّلَاةَ وَمِمَّا رَزَقْنَاهُمْ يُنفِقُونَ",
+        translation: "Who believe in the unseen, establish prayer, and spend out of what We have provided for them."
+      },
+      {
+        verse: 4,
+        arabic: "وَالَّذِينَ يُؤْمِنُونَ بِمَا أُنزِلَ إِلَيْكَ وَمَا أُنزِلَ مِن قَبْلِكَ وَبِالْآخِرَةِ هُمْ يُوقِنُونَ",
+        translation: "And who believe in what has been revealed to you, and what was revealed before you, and of the Hereafter they are certain."
+      },
+      {
+        verse: 5,
+        arabic: "أُولَٰئِكَ عَلَىٰ هُدًى مِّن رَّبِّهِمْ ۖ وَأُولَٰئِكَ هُمُ الْمُفْلِحُونَ",
+        translation: "Those are upon guidance from their Lord, and it is those who are the successful."
+      }
+    ]
   },
   {
     number: 3,
@@ -61,7 +88,34 @@ export const quranSurahs = [
     english: "The Family of Imran",
     verses: 200,
     type: "Medinan",
-    audio: "https://server8.mp3quran.net/afs/003.mp3"
+    audio: "https://server8.mp3quran.net/afs/003.mp3",
+    text: [
+      {
+        verse: 1,
+        arabic: "الٓمٓ",
+        translation: "Alif, Lam, Meem."
+      },
+      {
+        verse: 2,
+        arabic: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ",
+        translation: "Allah - there is no deity except Him, the Ever-Living, the Self-Sustaining."
+      },
+      {
+        verse: 3,
+        arabic: "نَزَّلَ عَلَيْكَ الْكِتَابَ بِالْحَقِّ مُصَدِّقًا لِّمَا بَيْنَ يَدَيْهِ وَأَنزَلَ التَّوْرَاةَ وَالْإِنجِيلَ",
+        translation: "He has sent down upon you, the Book in truth, confirming what was before it. And He revealed the Torah and the Gospel."
+      },
+      {
+        verse: 4,
+        arabic: "مِن قَبْلُ هُدًى لِّلنَّاسِ وَأَنزَلَ الْفُرْقَانَ ۗ إِنَّ الَّذِينَ كَفَرُوا بِآيَاتِ اللَّهِ لَهُمْ عَذَابٌ شَدِيدٌ ۗ وَاللَّهُ عَزِيزٌ ذُو انتِقَامٍ",
+        translation: "Before, as guidance for the people. And He revealed the criterion. Indeed, those who disbelieve in the verses of Allah will have a severe punishment, and Allah is exalted in Might, the Owner of Retribution."
+      },
+      {
+        verse: 5,
+        arabic: "إِنَّ اللَّهَ لَا يَخْفَىٰ عَلَيْهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ",
+        translation: "Indeed, from Allah nothing is hidden in the earth nor in the heaven."
+      }
+    ]
   },
   {
     number: 4,
