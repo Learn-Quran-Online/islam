@@ -1,7 +1,20 @@
 import React from 'react';
-import { Navbar as BootstrapNavbar, Nav, Container } from 'react-bootstrap';
+import { Navbar as BootstrapNavbar, Nav, Container, NavDropdown } from 'react-bootstrap';
 import { Link, useLocation } from 'react-router-dom';
-import { FaHome, FaPray, FaQuran, FaCog, FaMosque } from 'react-icons/fa';
+import { 
+  FaHome, 
+  FaPray, 
+  FaQuran, 
+  FaCog, 
+  FaMosque, 
+  FaHands, 
+  FaCompass, 
+  FaCalendarAlt,
+  FaStar,
+  FaClock,
+  FaBook,
+  FaHeart
+} from 'react-icons/fa';
 
 const Navbar = ({ theme, userProfile }) => {
   const location = useLocation();
@@ -48,6 +61,42 @@ const Navbar = ({ theme, userProfile }) => {
               <FaQuran className="me-1" />
               Quran
             </Nav.Link>
+
+            <NavDropdown 
+              title={
+                <span>
+                  <FaBook className="me-1" />
+                  Islamic Tools
+                </span>
+              } 
+              id="islamic-tools-dropdown"
+              className="nav-dropdown"
+            >
+              <NavDropdown.Item as={Link} to="/dua">
+                <FaHands className="me-2" />
+                Duas & Supplications
+              </NavDropdown.Item>
+              <NavDropdown.Item as={Link} to="/tasbih">
+                <FaStar className="me-2" />
+                Digital Tasbih
+              </NavDropdown.Item>
+              <NavDropdown.Item as={Link} to="/qibla">
+                <FaCompass className="me-2" />
+                Qibla Direction
+              </NavDropdown.Item>
+              <NavDropdown.Item as={Link} to="/calendar">
+                <FaCalendarAlt className="me-2" />
+                Islamic Calendar
+              </NavDropdown.Item>
+              <NavDropdown.Item as={Link} to="/names">
+                <FaHeart className="me-2" />
+                99 Names of Allah
+              </NavDropdown.Item>
+              <NavDropdown.Item as={Link} to="/times">
+                <FaClock className="me-2" />
+                Prayer Times
+              </NavDropdown.Item>
+            </NavDropdown>
             
             <Nav.Link 
               as={Link} 
