@@ -173,7 +173,7 @@ body {
 
 /* Enhanced Moving Section */
 .enhanced-moving-section {
-  height: 350px;
+  height: 400px;
   background: var(--gradient-primary);
   position: relative;
   overflow: hidden;
@@ -181,8 +181,8 @@ body {
   grid-template-columns: 1fr 2fr 1fr;
   grid-template-rows: 1fr auto;
   align-items: center;
-  padding: 2rem;
-  margin-bottom: 2rem;
+  padding: 3rem;
+  margin-bottom: 3rem;
 }
 
 /* Prayer Side (Left) */
@@ -566,6 +566,17 @@ body {
 .search-btn:hover {
   transform: translateY(-50%) scale(1.1);
   box-shadow: 0 6px 20px rgba(46, 125, 50, 0.5);
+}
+
+.search-icon {
+  position: absolute;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  pointer-events: none;
+  z-index: 10;
 }
 
 /* Enhanced Cards */
@@ -2460,4 +2471,189 @@ body {
 
 .surah-reading-content::-webkit-scrollbar-thumb:hover {
   background: var(--gradient-accent);
+}
+
+/* Islamic Tools Components */
+.dua-card, .name-card, .dhikr-target-card, .tasbih-card, .qibla-card, .calendar-card, .event-card, .info-card {
+  background: var(--gradient-card);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+  overflow: hidden;
+  position: relative;
+}
+
+.dua-card::before, .name-card::before, .dhikr-target-card::before, .tasbih-card::before, .qibla-card::before, .calendar-card::before, .event-card::before, .info-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.dua-card:hover::before, .name-card:hover::before, .dhikr-target-card:hover::before, .tasbih-card:hover::before, .qibla-card:hover::before, .calendar-card:hover::before, .event-card:hover::before, .info-card:hover::before {
+  transform: scaleX(1);
+}
+
+.dua-card:hover, .name-card:hover, .dhikr-target-card:hover, .tasbih-card:hover, .qibla-card:hover, .calendar-card:hover, .event-card:hover, .info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary-color);
+}
+
+.dua-arabic, .name-arabic, .dhikr-arabic {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  text-align: right;
+  margin-bottom: 1rem;
+}
+
+.dua-translation, .name-meaning, .dhikr-name {
+  color: var(--text-color);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.tasbih-display {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.tasbih-count {
+  font-size: 4rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.tasbih-target {
+  font-size: 1.5rem;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+}
+
+.tasbih-progress {
+  height: 10px;
+  border-radius: 5px;
+}
+
+.tasbih-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.tasbih-btn {
+  border-radius: 50px;
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.tasbih-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.compass-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.compass {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  border: 3px solid var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.compass-needle {
+  position: absolute;
+  width: 4px;
+  height: 80px;
+  background: var(--primary-color);
+  transform-origin: center bottom;
+  transition: transform 0.5s ease;
+}
+
+.compass-arrow {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+.compass-markings {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.marking {
+  position: absolute;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.marking.n { top: 10px; left: 50%; transform: translateX(-50%); }
+.marking.e { right: 10px; top: 50%; transform: translateY(-50%); }
+.marking.s { bottom: 10px; left: 50%; transform: translateX(-50%); }
+.marking.w { left: 10px; top: 50%; transform: translateY(-50%); }
+
+.calendar-card, .event-card {
+  text-align: center;
+  padding: 2rem;
+}
+
+.current-date, .islamic-date {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.name-modal-arabic, .dua-modal-arabic {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.name-modal-details, .dua-modal-details {
+  line-height: 1.8;
+}
+
+.name-modal-details h6, .dua-modal-details h6 {
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-bottom: 0.5rem;
 }

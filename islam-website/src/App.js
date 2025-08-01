@@ -12,6 +12,14 @@ import Settings from './components/Settings';
 import PrayerNotification from './components/PrayerNotification';
 import Footer from './components/Footer';
 
+// Import Islamic Tools components
+import Dua from './components/IslamicTools/Dua';
+import Tasbih from './components/IslamicTools/Tasbih';
+import Qibla from './components/IslamicTools/Qibla';
+import IslamicCalendar from './components/IslamicTools/IslamicCalendar';
+import NamesOfAllah from './components/IslamicTools/NamesOfAllah';
+import PrayerTimes from './components/IslamicTools/PrayerTimes';
+
 function App() {
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('theme') || 'light';
@@ -59,6 +67,13 @@ function App() {
               />
             } 
           />
+          {/* Islamic Tools Routes */}
+          <Route path="/dua" element={<Dua />} />
+          <Route path="/tasbih" element={<Tasbih />} />
+          <Route path="/qibla" element={<Qibla />} />
+          <Route path="/calendar" element={<IslamicCalendar />} />
+          <Route path="/names" element={<NamesOfAllah />} />
+          <Route path="/times" element={<PrayerTimes />} />
         </Routes>
         <Footer />
       </div>
