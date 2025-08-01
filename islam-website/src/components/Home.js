@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Toast, ToastContainer } from 'react-bootstrap';
 import { motion } from 'framer-motion';
-import { FaSearch, FaClock, FaPlay, FaHeart, FaDonate, FaMosque, FaDove, FaStar, FaExclamationTriangle } from 'react-icons/fa';
+import { FaSearch, FaClock, FaPlay, FaHeart, FaDonate, FaMosque, FaDove, FaStar, FaExclamationTriangle, FaCalendarAlt, FaCompass, FaHands } from 'react-icons/fa';
 import { getPrayerTimes, getCurrentPrayer, formatTimeRemaining } from '../utils/prayerTimes';
 import { quranVerse, islamicVideos, searchableContent } from '../data/quranData';
 
@@ -13,6 +13,8 @@ const Home = () => {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState([]);
+  const [islamicDate, setIslamicDate] = useState('');
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     const fetchPrayerData = async () => {
@@ -30,14 +32,35 @@ const Home = () => {
 
     fetchPrayerData();
 
-    // Update current prayer info every minute
+    // Update current prayer info and time every minute
     const interval = setInterval(() => {
       if (prayerTimes) {
         setCurrentPrayerInfo(getCurrentPrayer(prayerTimes));
       }
+      setCurrentTime(new Date());
     }, 60000);
 
-    return () => clearInterval(interval);
+    // Update time every second for clock
+    const timeInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    // Set Islamic date (simplified - you might want to use a proper Islamic calendar library)
+    const islamicMonths = [
+      'Muharram', 'Safar', 'Rabi al-Awwal', 'Rabi al-Thani',
+      'Jumada al-Awwal', 'Jumada al-Thani', 'Rajab', 'Sha\'ban',
+      'Ramadan', 'Shawwal', 'Dhu al-Qi\'dah', 'Dhu al-Hijjah'
+    ];
+    const currentDate = new Date();
+    const islamicYear = 1445; // This should be calculated properly
+    const islamicMonth = islamicMonths[currentDate.getMonth()];
+    const islamicDay = currentDate.getDate();
+    setIslamicDate(`${islamicDay} ${islamicMonth} ${islamicYear} AH`);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(timeInterval);
+    };
   }, [prayerTimes]);
 
   const showNotification = (message, type = 'info') => {
@@ -85,9 +108,25 @@ const Home = () => {
     setShowSearchResults(false);
   };
 
+  const handleIconClick = (type) => {
+    switch(type) {
+      case 'calendar':
+        showNotification('Islamic Calendar feature coming soon!', 'info');
+        break;
+      case 'qibla':
+        showNotification('Qibla Direction: Face towards Mecca, Saudi Arabia', 'info');
+        break;
+      case 'dua':
+        showNotification('Opening Dua collection...', 'info');
+        break;
+      default:
+        showNotification('Feature coming soon!', 'info');
+    }
+  };
+
   // Create floating particles for background animation
   const createParticles = () => {
-    return Array.from({ length: 20 }, (_, i) => (
+    return Array.from({ length: 15 }, (_, i) => (
       <div
         key={i}
         className="particle"
@@ -100,6 +139,24 @@ const Home = () => {
     ));
   };
 
+  const formatTime = (date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   return (
     <div style={{ paddingTop: '80px' }}>
       {/* Animated Background Particles */}
@@ -107,65 +164,153 @@ const Home = () => {
         {createParticles()}
       </div>
 
-      {/* Moving Images Section */}
-      <section className="moving-images-section">
-        <motion.div
-          className="moving-mosque"
-          style={{ left: '10%', top: '30%' }}
-          animate={{ x: [0, 100, 0], y: [0, -20, 0] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-        >
-          <FaMosque />
-        </motion.div>
-        
-        <motion.div
-          className="flying-bird"
-          style={{ left: '20%', top: '20%' }}
-          animate={{ 
-            x: [0, 200, 400, 600, 800],
-            y: [0, -30, 10, -20, 0]
-          }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <FaDove />
-        </motion.div>
-        
-        <motion.div
-          className="flying-bird"
-          style={{ left: '70%', top: '50%' }}
-          animate={{ 
-            x: [0, -150, -300, -450],
-            y: [0, 20, -10, 15]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        >
-          <FaDove />
-        </motion.div>
+      {/* Enhanced Moving Images Section with Prayer Times and Islamic Date */}
+      <section className="enhanced-moving-section">
+        {/* Left Side - Current and Next Prayer */}
+        <div className="prayer-side">
+          {currentPrayerInfo && (
+            <motion.div
+              className="prayer-display"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 1 }}
+            >
+              <div className="current-prayer-info">
+                <h4>
+                  <FaClock className="me-2" />
+                  Current Prayer
+                </h4>
+                <div className="prayer-name">{currentPrayerInfo.current?.name || 'None'}</div>
+                
+                <h5 className="mt-3">Next Prayer</h5>
+                <div className="next-prayer">
+                  <span className="prayer-name">{currentPrayerInfo.next.name}</span>
+                  <span className="time-remaining">
+                    in {formatTimeRemaining(currentPrayerInfo.timeRemaining)}
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </div>
 
-        {/* Floating Stars */}
-        {[...Array(8)].map((_, i) => (
+        {/* Center - Welcome Message with Animations */}
+        <div className="welcome-center">
           <motion.div
-            key={i}
-            className="floating-star"
-            style={{
-              left: `${10 + i * 12}%`,
-              top: `${20 + (i % 3) * 20}%`
-            }}
+            className="moving-mosque"
             animate={{ 
-              scale: [1, 1.3, 1],
-              rotate: [0, 180, 360],
-              opacity: [0.3, 1, 0.3]
+              x: [0, 50, 0, -50, 0],
+              y: [0, -20, 0, -15, 0]
             }}
-            transition={{ 
-              duration: 3, 
-              repeat: Infinity, 
-              delay: i * 0.5,
-              ease: "easeInOut"
-            }}
+            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
           >
-            <FaStar />
+            <FaMosque />
           </motion.div>
-        ))}
+          
+          <motion.div
+            className="welcome-text"
+            animate={{ 
+              scale: [1, 1.05, 1],
+              opacity: [0.8, 1, 0.8]
+            }}
+            transition={{ duration: 3, repeat: Infinity }}
+          >
+            <h2>أهلاً وسهلاً</h2>
+            <p>Welcome to Your Spiritual Journey</p>
+          </motion.div>
+
+          <motion.div
+            className="flying-bird"
+            animate={{ 
+              x: [0, 200, 400, 200, 0],
+              y: [0, -30, 10, -20, 0]
+            }}
+            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          >
+            <FaDove />
+          </motion.div>
+
+          {/* Floating Stars */}
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="floating-star"
+              style={{
+                left: `${20 + i * 15}%`,
+                top: `${30 + (i % 3) * 20}%`
+              }}
+              animate={{ 
+                scale: [1, 1.3, 1],
+                rotate: [0, 180, 360],
+                opacity: [0.3, 1, 0.3]
+              }}
+              transition={{ 
+                duration: 3, 
+                repeat: Infinity, 
+                delay: i * 0.5,
+                ease: "easeInOut"
+              }}
+            >
+              <FaStar />
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Right Side - Islamic Date and Time */}
+        <div className="date-time-side">
+          <motion.div
+            className="islamic-datetime"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 1, delay: 0.5 }}
+          >
+            <div className="current-time">
+              <FaClock className="me-2" />
+              <div className="time-display-large">{formatTime(currentTime)}</div>
+            </div>
+            
+            <div className="current-date">
+              <div className="gregorian-date">{formatDate(currentTime)}</div>
+              <div className="islamic-date">
+                <FaCalendarAlt className="me-2" />
+                {islamicDate}
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Bottom - Islamic Icons */}
+        <div className="islamic-icons">
+          <motion.div
+            className="icon-container"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => handleIconClick('calendar')}
+          >
+            <FaCalendarAlt />
+            <span>Calendar</span>
+          </motion.div>
+          
+          <motion.div
+            className="icon-container"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => handleIconClick('qibla')}
+          >
+            <FaCompass />
+            <span>Qibla</span>
+          </motion.div>
+          
+          <motion.div
+            className="icon-container"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => handleIconClick('dua')}
+          >
+            <FaHands />
+            <span>Duas</span>
+          </motion.div>
+        </div>
       </section>
 
       {/* Hero Section with Animated Background */}
@@ -180,35 +325,17 @@ const Home = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1 }}
               >
-                <h1>أهلاً وسهلاً</h1>
-                <p>Welcome to your spiritual journey</p>
-                
-                {/* Prayer Time Display */}
-                {currentPrayerInfo && (
-                  <motion.div 
-                    className="prayer-time-card current-prayer"
-                    initial={{ scale: 0.9 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <h4>
-                      <FaClock className="me-2" />
-                      Next Prayer: {currentPrayerInfo.next.name}
-                    </h4>
-                    <p className="mb-0">
-                      Time Remaining: {formatTimeRemaining(currentPrayerInfo.timeRemaining)}
-                    </p>
-                  </motion.div>
-                )}
+                <h1>Your Islamic Companion</h1>
+                <p>Discover, Learn, and Practice Islam with comprehensive tools and resources</p>
               </motion.div>
             </Col>
           </Row>
         </Container>
       </section>
 
-      <Container className="py-5">
+      <Container className="py-4">
         {/* Enhanced Search Bar */}
-        <Row className="justify-content-center mb-5">
+        <Row className="justify-content-center mb-4">
           <Col lg={8}>
             <motion.div 
               className="search-container"
@@ -279,50 +406,8 @@ const Home = () => {
           </Col>
         </Row>
 
-        {/* Prayer Times Card */}
-        {prayerTimes && (
-          <Row className="mb-5">
-            <Col>
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.9 }}
-              >
-                <Card className="card-custom">
-                  <Card.Header className="card-header-custom">
-                    <FaClock className="me-2" />
-                    Prayer Times - Gujranwala
-                  </Card.Header>
-                  <Card.Body>
-                    <Row>
-                      {Object.entries(prayerTimes).map(([prayer, time]) => {
-                        if (prayer === 'date') return null;
-                        const isCurrent = currentPrayerInfo?.current?.name === prayer;
-                        const isNext = currentPrayerInfo?.next?.name === prayer;
-                        
-                        return (
-                          <Col md={4} lg={2} key={prayer} className="mb-3">
-                            <motion.div 
-                              className={`prayer-time-card ${isCurrent ? 'current-prayer' : ''} ${isNext ? 'border border-warning' : ''}`}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              <h6 className="mb-1">{prayer}</h6>
-                              <h5 className="mb-0">{time}</h5>
-                            </motion.div>
-                          </Col>
-                        );
-                      })}
-                    </Row>
-                  </Card.Body>
-                </Card>
-              </motion.div>
-            </Col>
-          </Row>
-        )}
-
         {/* Enhanced Quran Verse */}
-        <Row className="mb-5">
+        <Row className="mb-4">
           <Col>
             <motion.div
               initial={{ opacity: 0, y: 50 }}
@@ -345,7 +430,7 @@ const Home = () => {
         </Row>
 
         {/* Enhanced Islamic Videos */}
-        <Row className="mb-5">
+        <Row className="mb-4">
           <Col>
             <motion.div
               initial={{ opacity: 0 }}

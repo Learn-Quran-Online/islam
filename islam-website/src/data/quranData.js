@@ -6,7 +6,44 @@ export const quranSurahs = [
     english: "The Opening",
     verses: 7,
     type: "Meccan",
-    audio: "https://server8.mp3quran.net/afs/001.mp3"
+    audio: "https://server8.mp3quran.net/afs/001.mp3",
+    text: [
+      {
+        verse: 1,
+        arabic: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+        translation: "In the name of Allah, the Entirely Merciful, the Especially Merciful."
+      },
+      {
+        verse: 2,
+        arabic: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+        translation: "All praise is due to Allah, Lord of the worlds."
+      },
+      {
+        verse: 3,
+        arabic: "الرَّحْمَٰنِ الرَّحِيمِ",
+        translation: "The Entirely Merciful, the Especially Merciful,"
+      },
+      {
+        verse: 4,
+        arabic: "مَالِكِ يَوْمِ الدِّينِ",
+        translation: "Sovereign of the Day of Recompense."
+      },
+      {
+        verse: 5,
+        arabic: "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+        translation: "It is You we worship and You we ask for help."
+      },
+      {
+        verse: 6,
+        arabic: "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
+        translation: "Guide us to the straight path"
+      },
+      {
+        verse: 7,
+        arabic: "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
+        translation: "The path of those upon whom You have bestowed favor, not of those who have evoked [Your] anger or of those who are astray."
+      }
+    ]
   },
   {
     number: 2,
@@ -723,8 +760,8 @@ export const islamicVideos = [
   {
     id: 1,
     title: "Beautiful Quran Recitation - Surah Rahman",
-    thumbnail: "https://img.youtube.com/vi/Dkj8vXsGSUI/maxresdefault.jpg",
-    url: "https://www.youtube.com/watch?v=Dkj8vXsGSUI",
+    thumbnail: "https://img.youtube.com/vi/1ju4VlClNJE/maxresdefault.jpg",
+    url: "https://www.youtube.com/watch?v=1ju4VlClNJE",
     description: "Peaceful recitation of Surah Rahman by Sheikh Mishary Rashid",
     duration: "28:45",
     views: "2.3M views"
@@ -732,20 +769,20 @@ export const islamicVideos = [
   {
     id: 2,
     title: "The Story of Prophet Muhammad (PBUH)",
-    thumbnail: "https://img.youtube.com/vi/VOUp3ZZ9t3A/maxresdefault.jpg",
-    url: "https://www.youtube.com/watch?v=VOUp3ZZ9t3A",
+    thumbnail: "https://img.youtube.com/vi/TpcbfxtdoI8/maxresdefault.jpg",
+    url: "https://www.youtube.com/watch?v=TpcbfxtdoI8",
     description: "Inspiring documentary about the life of Prophet Muhammad",
     duration: "45:30",
     views: "1.8M views"
   },
   {
     id: 3,
-    title: "Learn the 5 Pillars of Islam",
-    thumbnail: "https://img.youtube.com/vi/iAJrr6ZgOts/maxresdefault.jpg",
-    url: "https://www.youtube.com/watch?v=iAJrr6ZgOts",
-    description: "Educational video about the fundamental pillars of Islam",
-    duration: "15:20",
-    views: "950K views"
+    title: "Beautiful Islamic Nasheed - Tala al Badru",
+    thumbnail: "https://img.youtube.com/vi/7hHECMVOq7g/maxresdefault.jpg",
+    url: "https://www.youtube.com/watch?v=7hHECMVOq7g",
+    description: "Traditional Islamic nasheed with beautiful Arabic vocals",
+    duration: "8:15",
+    views: "650K views"
   }
 ];
 
