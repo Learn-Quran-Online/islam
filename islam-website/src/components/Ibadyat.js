@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Modal, Button, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Modal, Button, Alert, Badge } from 'react-bootstrap';
 import { motion } from 'framer-motion';
-import { FaPray, FaKaaba, FaStar, FaMoon, FaClock, FaExclamationTriangle } from 'react-icons/fa';
-import { getPrayerTimes } from '../utils/prayerTimes';
+import { FaPray, FaKaaba, FaStar, FaMoon, FaClock, FaExclamationTriangle, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
+import { getPrayerTimes, getCurrentPrayer } from '../utils/prayerTimes';
 
 const Ibadyat = () => {
   const [prayerTimes, setPrayerTimes] = useState(null);
@@ -10,6 +10,8 @@ const Ibadyat = () => {
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPrayerInfo, setCurrentPrayerInfo] = useState(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     const fetchPrayerTimes = async () => {
@@ -17,11 +19,12 @@ const Ibadyat = () => {
         setLoading(true);
         const times = await getPrayerTimes();
         setPrayerTimes(times);
+        setCurrentPrayerInfo(getCurrentPrayer(times));
         setError(null);
       } catch (err) {
         console.error('Error fetching prayer times:', err);
         setError('Failed to load prayer times. Please try again later.');
-        // Set fallback prayer times
+        // Set fallback prayer times for major cities
         setPrayerTimes({
           Fajr: '05:30',
           Dhuhr: '12:15',
@@ -34,7 +37,25 @@ const Ibadyat = () => {
       }
     };
     fetchPrayerTimes();
-  }, []);
+
+    // Update current prayer info and time every minute
+    const interval = setInterval(() => {
+      if (prayerTimes) {
+        setCurrentPrayerInfo(getCurrentPrayer(prayerTimes));
+      }
+      setCurrentTime(new Date());
+    }, 60000);
+
+    // Update time every second for clock
+    const timeInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(timeInterval);
+    };
+  }, [prayerTimes]);
 
   // Use useMemo or create ibadyatData inside useEffect to ensure it updates when prayerTimes changes
   const getIbadyatData = () => {
@@ -98,55 +119,55 @@ const Ibadyat = () => {
         icon: FaStar,
         color: "#ff6b35",
         content: {
-          description: "Umrah is a pilgrimage to Mecca that can be performed at any time of the year. It is often called the 'lesser pilgrimage'.",
+          description: "Umrah is a voluntary pilgrimage that can be performed at any time of the year, unlike Hajj which has specific dates.",
           importance: [
-            "Voluntary act of worship with great reward",
+            "Voluntary pilgrimage to Mecca",
             "Can be performed throughout the year",
-            "Purifies the soul and brings spiritual peace",
-            "Opportunity to visit the holy sites",
-            "Preparation for Hajj"
+            "Purifies the soul and forgives sins",
+            "Strengthens faith and devotion",
+            "Provides spiritual rejuvenation"
           ],
           rituals: [
-            "Ihram - Entering the sacred state",
-            "Tawaf - Seven rounds around Kaaba",
-            "Sa'i - Walking between Safa and Marwah hills",
-            "Cutting or trimming hair (Halq or Taqsir)"
+            "Ihram - Sacred state of purity",
+            "Tawaf - Circumambulation of Kaaba",
+            "Sa'i - Walking between Safa and Marwah",
+            "Halq or Taqsir - Shaving or trimming hair"
           ],
           tips: [
-            "Choose the right time to avoid crowds",
-            "Book through licensed travel agents",
-            "Learn the supplications (Duas)",
-            "Respect the sanctity of the holy places",
-            "Take advantage of spiritual opportunities"
+            "Plan your trip during off-peak seasons",
+            "Learn the rituals and duas",
+            "Book accommodations in advance",
+            "Stay hydrated and take care of health",
+            "Make sincere supplications"
           ]
         }
       },
       fasting: {
         title: "Fasting (Sawm)",
         icon: FaMoon,
-        color: "#663399",
+        color: "#2c3e50",
         content: {
-          description: "Fasting during Ramadan is the fourth pillar of Islam, involving abstinence from food, drink, and other physical needs from dawn to sunset.",
+          description: "Fasting during Ramadan is the fourth pillar of Islam. It teaches self-discipline, empathy, and gratitude.",
           importance: [
-            "Develops self-control and discipline",
-            "Increases empathy for the less fortunate",
+            "Obligatory during the month of Ramadan",
+            "Teaches self-discipline and patience",
+            "Develops empathy for the less fortunate",
             "Purifies the soul and body",
-            "Brings spiritual cleansing and closeness to Allah",
-            "Builds community spirit and unity"
+            "Strengthens willpower and faith"
           ],
-          rules: [
-            "Fast from dawn (Fajr) to sunset (Maghrib)",
-            "Abstain from food, drink, and marital relations",
-            "Avoid negative behaviors and thoughts",
-            "Increase prayers and Quran recitation",
-            "Give charity (Zakat) and help others"
+          types: [
+            "Ramadan fasting (obligatory)",
+            "Voluntary fasting (recommended)",
+            "Fasting on Mondays and Thursdays",
+            "Fasting on the 13th, 14th, and 15th of each month",
+            "Fasting on the Day of Arafat"
           ],
           tips: [
-            "Have a healthy Suhur (pre-dawn meal)",
+            "Eat a healthy Suhoor (pre-dawn meal)",
             "Break fast with dates and water",
             "Avoid overeating during Iftar",
-            "Increase spiritual activities",
-            "Be patient and maintain good character"
+            "Stay hydrated between fasts",
+            "Increase in worship and good deeds"
           ]
         }
       }
@@ -154,13 +175,8 @@ const Ibadyat = () => {
   };
 
   const openModal = (topic) => {
-    try {
-      setSelectedTopic(topic);
-      setShowModal(true);
-    } catch (err) {
-      console.error('Error opening modal:', err);
-      setError('Failed to open details. Please try again.');
-    }
+    setSelectedTopic(topic);
+    setShowModal(true);
   };
 
   const closeModal = () => {
@@ -168,197 +184,222 @@ const Ibadyat = () => {
     setSelectedTopic(null);
   };
 
+  const formatTime = (time) => {
+    return time;
+  };
+
+  const getPrayerStatus = (prayerName, prayerTime) => {
+    if (!currentPrayerInfo) return 'upcoming';
+    
+    if (currentPrayerInfo.current?.name === prayerName) {
+      return 'current';
+    } else if (currentPrayerInfo.next?.name === prayerName) {
+      return 'next';
+    }
+    return 'upcoming';
+  };
+
   const ibadyatData = getIbadyatData();
+
+  if (loading) {
+    return (
+      <div style={{ paddingTop: '100px', minHeight: '100vh' }}>
+        <Container>
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+            <p className="mt-3">Loading prayer times and Islamic content...</p>
+          </div>
+        </Container>
+      </div>
+    );
+  }
 
   return (
     <div style={{ paddingTop: '100px', minHeight: '100vh' }}>
       <Container>
-        <Row>
+        {/* Header */}
+        <Row className="mb-5">
           <Col>
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h1 className="text-center mb-4">العبادات</h1>
-              <p className="text-center mb-5">Acts of Worship in Islam</p>
+              <h1 className="text-center mb-3">
+                <FaPray className="me-3" />
+                العبادات
+              </h1>
+              <p className="text-center text-muted mb-4">
+                Islamic Worship & Practices - Learn about the pillars of Islam and spiritual practices
+              </p>
             </motion.div>
           </Col>
         </Row>
 
-        {/* Error Alert */}
-        {error && (
-          <Row className="mb-4">
-            <Col>
-              <Alert variant="warning" dismissible onClose={() => setError(null)}>
-                <FaExclamationTriangle className="me-2" />
-                {error}
-              </Alert>
-            </Col>
-          </Row>
-        )}
-
-        {/* Ibadyat Cards Grid */}
-        <Row className="ibadyat-grid">
-          {Object.entries(ibadyatData).map(([key, item], index) => {
-            const IconComponent = item.icon;
-            return (
-              <Col key={key} lg={3} md={6} className="mb-4">
-                <motion.div
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.2 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div 
-                    className="ibadyat-card"
-                    onClick={() => openModal(item)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <IconComponent 
-                      className="ibadyat-icon" 
-                      style={{ color: item.color }}
-                    />
-                    <h4>{item.title}</h4>
-                    <p>Click to learn more</p>
-                  </div>
-                </motion.div>
-              </Col>
-            );
-          })}
+        {/* Prayer Times Section */}
+        <Row className="mb-5">
+          <Col>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <Card className="prayer-times-card">
+                <Card.Header className="text-center">
+                  <h3>
+                    <FaClock className="me-2" />
+                    Prayer Times
+                  </h3>
+                  <p className="mb-0">
+                    <FaMapMarkerAlt className="me-2" />
+                    Gujranwala, Lahore, Islamabad Region
+                  </p>
+                </Card.Header>
+                <Card.Body>
+                  {error ? (
+                    <Alert variant="warning">
+                      <FaExclamationTriangle className="me-2" />
+                      {error}
+                    </Alert>
+                  ) : (
+                    <Row>
+                      {prayerTimes && Object.entries(prayerTimes)
+                        .filter(([key]) => key !== 'date')
+                        .map(([prayerName, prayerTime], index) => {
+                          const status = getPrayerStatus(prayerName, prayerTime);
+                          return (
+                            <Col md={4} lg={2} key={prayerName} className="mb-3">
+                              <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                              >
+                                <Card className={`prayer-time-item ${status}`}>
+                                  <Card.Body className="text-center">
+                                    <div className="prayer-icon mb-2">
+                                      {status === 'current' && (
+                                        <motion.div
+                                          animate={{ scale: [1, 1.2, 1] }}
+                                          transition={{ duration: 2, repeat: Infinity }}
+                                        >
+                                          <FaClock className="text-primary" />
+                                        </motion.div>
+                                      )}
+                                    </div>
+                                    <h5 className="prayer-name">{prayerName}</h5>
+                                    <h4 className="prayer-time">{formatTime(prayerTime)}</h4>
+                                    <Badge 
+                                      bg={status === 'current' ? 'primary' : status === 'next' ? 'success' : 'secondary'}
+                                      className="mt-2"
+                                    >
+                                      {status === 'current' ? 'Current' : status === 'next' ? 'Next' : 'Upcoming'}
+                                    </Badge>
+                                  </Card.Body>
+                                </Card>
+                              </motion.div>
+                            </Col>
+                          );
+                        })}
+                    </Row>
+                  )}
+                </Card.Body>
+              </Card>
+            </motion.div>
+          </Col>
         </Row>
 
-        {/* Prayer Times Section */}
-        {prayerTimes && !loading && (
-          <Row className="mt-5">
-            <Col>
+        {/* Ibadyat Grid */}
+        <Row className="ibadyat-grid">
+          {Object.entries(ibadyatData).map(([key, topic], index) => (
+            <Col lg={6} key={key} className="mb-4">
               <motion.div
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: index * 0.2 }}
+                whileHover={{ y: -10 }}
               >
-                <Card className="card-custom">
-                  <Card.Header className="card-header-custom">
-                    <FaClock className="me-2" />
-                    Today's Prayer Times - Gujranwala
-                  </Card.Header>
-                  <Card.Body>
-                    <div className="prayer-times-grid">
-                      {Object.entries(prayerTimes).map(([prayer, time]) => {
-                        if (prayer === 'date') return null;
-                        return (
-                          <div key={prayer} className="prayer-time-item">
-                            <h5>{prayer}</h5>
-                            <h4>{time}</h4>
-                          </div>
-                        );
-                      })}
+                <Card 
+                  className="ibadyat-card h-100"
+                  onClick={() => openModal(topic)}
+                >
+                  <Card.Body className="text-center">
+                    <div className="ibadyat-icon mb-3">
+                      <topic.icon style={{ color: topic.color, fontSize: '3rem' }} />
                     </div>
+                    <h4 className="ibadyat-title">{topic.title}</h4>
+                    <p className="ibadyat-description">
+                      {topic.content.description.substring(0, 100)}...
+                    </p>
+                    <Button variant="outline-primary" size="sm">
+                      Learn More
+                    </Button>
                   </Card.Body>
                 </Card>
               </motion.div>
             </Col>
-          </Row>
-        )}
+          ))}
+        </Row>
 
-        {/* Loading state */}
-        {loading && (
-          <Row className="mt-5">
-            <Col className="text-center">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Loading prayer times...</span>
-              </div>
-              <p className="mt-2">Loading prayer times...</p>
-            </Col>
-          </Row>
-        )}
-      </Container>
-
-      {/* Modal for detailed information */}
-      <Modal show={showModal} onHide={closeModal} size="lg" centered>
-        {selectedTopic && (
-          <>
-            <Modal.Header closeButton>
-              <Modal.Title>
-                {React.createElement(selectedTopic.icon, { 
-                  className: "me-2", 
-                  style: { color: selectedTopic.color } 
-                })}
-                {selectedTopic.title}
-              </Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <div className="mb-4">
-                <h5>Description</h5>
-                <p>{selectedTopic.content.description}</p>
-              </div>
-
-              <div className="mb-4">
-                <h5>Importance</h5>
-                <ul>
+        {/* Modal for Detailed Information */}
+        <Modal show={showModal} onHide={closeModal} size="lg" centered>
+          <Modal.Header closeButton>
+            <Modal.Title>
+              {selectedTopic?.icon && <selectedTopic.icon className="me-2" style={{ color: selectedTopic?.color }} />}
+              {selectedTopic?.title}
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {selectedTopic && (
+              <div>
+                <p className="mb-4">{selectedTopic.content.description}</p>
+                
+                <h5>Importance:</h5>
+                <ul className="mb-4">
                   {selectedTopic.content.importance.map((item, index) => (
                     <li key={index}>{item}</li>
                   ))}
                 </ul>
+
+                {selectedTopic.content.rituals && (
+                  <>
+                    <h5>Rituals:</h5>
+                    <ul className="mb-4">
+                      {selectedTopic.content.rituals.map((ritual, index) => (
+                        <li key={index}>{ritual}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+
+                {selectedTopic.content.types && (
+                  <>
+                    <h5>Types:</h5>
+                    <ul className="mb-4">
+                      {selectedTopic.content.types.map((type, index) => (
+                        <li key={index}>{type}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+
+                <h5>Tips:</h5>
+                <ul>
+                  {selectedTopic.content.tips.map((tip, index) => (
+                    <li key={index}>{tip}</li>
+                  ))}
+                </ul>
               </div>
-
-              {selectedTopic.content.prayers && selectedTopic.content.prayers.length > 0 && (
-                <div className="mb-4">
-                  <h5>Prayer Times</h5>
-                  <Row>
-                    {selectedTopic.content.prayers.map(([prayer, time]) => (
-                      <Col md={6} key={prayer} className="mb-2">
-                        <div className="prayer-time-display">
-                          <strong>{prayer}:</strong> <span className="time-badge">{time}</span>
-                        </div>
-                      </Col>
-                    ))}
-                  </Row>
-                </div>
-              )}
-
-              {selectedTopic.content.rituals && (
-                <div className="mb-4">
-                  <h5>Rituals</h5>
-                  <ul>
-                    {selectedTopic.content.rituals.map((ritual, index) => (
-                      <li key={index}>{ritual}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {selectedTopic.content.rules && (
-                <div className="mb-4">
-                  <h5>Rules and Guidelines</h5>
-                  <ul>
-                    {selectedTopic.content.rules.map((rule, index) => (
-                      <li key={index}>{rule}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {selectedTopic.content.tips && (
-                <div className="mb-4">
-                  <h5>Tips and Recommendations</h5>
-                  <ul>
-                    {selectedTopic.content.tips.map((tip, index) => (
-                      <li key={index}>{tip}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={closeModal}>
-                Close
-              </Button>
-            </Modal.Footer>
-          </>
-        )}
-      </Modal>
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={closeModal}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </Container>
     </div>
   );
 };

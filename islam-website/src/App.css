@@ -173,7 +173,7 @@ body {
 
 /* Enhanced Moving Section */
 .enhanced-moving-section {
-  height: 400px;
+  height: 500px;
   background: var(--gradient-primary);
   position: relative;
   overflow: hidden;
@@ -182,7 +182,60 @@ body {
   grid-template-rows: 1fr auto;
   align-items: center;
   padding: 3rem;
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
+}
+
+/* Mosque Background */
+.mosque-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.mosque-image {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 200px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+  border-radius: 50% 50% 0 0;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255,255,255,0.2);
+}
+
+.floating-water {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.3));
+  animation: water-float 8s ease-in-out infinite;
+}
+
+.water-reflection {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.2), transparent);
+  animation: water-reflection 6s ease-in-out infinite;
+}
+
+@keyframes water-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes water-reflection {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
 }
 
 /* Prayer Side (Left) */
@@ -191,13 +244,17 @@ body {
   align-items: center;
   justify-content: center;
   height: 100%;
+  z-index: 2;
+  position: relative;
 }
 
 .prayer-display {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 2rem;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(15px);
+  border-radius: 25px;
+  padding: 2.5rem;
+  border: 1px solid rgba(255,255,255,0.3);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
   color: white;
   text-align: center;
   border: 2px solid rgba(255, 255, 255, 0.2);
@@ -250,6 +307,7 @@ body {
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  z-index: 2;
 }
 
 .moving-mosque {
@@ -302,6 +360,8 @@ body {
   align-items: center;
   justify-content: center;
   height: 100%;
+  z-index: 2;
+  position: relative;
 }
 
 .islamic-datetime {
@@ -988,7 +1048,7 @@ body {
 /* Enhanced Ibadyat Cards */
 .ibadyat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 2.5rem;
   padding: 2rem 0;
 }
@@ -1080,6 +1140,39 @@ body {
 }
 
 /* Enhanced Settings */
+.settings-toggle-btn {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  box-shadow: var(--shadow-hover);
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.settings-toggle-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 25px rgba(46, 125, 50, 0.4);
+}
+
+.settings-sidebar {
+  width: 350px !important;
+  background: var(--gradient-card);
+  border-left: 3px solid var(--primary-color);
+}
+
+.settings-sidebar .offcanvas-header {
+  background: var(--gradient-primary);
+  color: white;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
 .settings-container {
   max-width: 900px;
   margin: 0 auto;
@@ -1146,6 +1239,43 @@ body {
   box-shadow: 0 8px 25px rgba(46, 125, 50, 0.3);
 }
 
+.profile-placeholder {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: var(--text-color);
+  margin: 0 auto;
+}
+
+.app-info {
+  font-size: 0.9rem;
+}
+
+.feature-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0.5rem;
+}
+
+.feature-list li {
+  padding: 0.25rem 0;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.feature-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
 .profile-preview:hover {
   transform: scale(1.05);
   box-shadow: 0 10px 30px rgba(46, 125, 50, 0.5);
@@ -1193,6 +1323,18 @@ body {
 
 /* Enhanced Responsive Design */
 @media (max-width: 768px) {
+  .settings-toggle-btn {
+    top: 80px;
+    right: 15px;
+    width: 45px;
+    height: 45px;
+    font-size: 1rem;
+  }
+
+  .settings-sidebar {
+    width: 100% !important;
+  }
+
   .hero-content h1 {
     font-size: 2.8rem;
   }
@@ -2133,6 +2275,26 @@ body {
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   transition: all 0.3s ease;
+}
+
+.verse-container.current-verse {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  color: white;
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(46, 125, 50, 0.3);
+}
+
+.verse-container.current-verse .verse-number {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.verse-container.current-verse .verse-arabic {
+  color: white;
+}
+
+.verse-container.current-verse .verse-translation {
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .verse-container:hover {

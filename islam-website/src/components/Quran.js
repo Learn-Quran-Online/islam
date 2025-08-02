@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Modal, Alert, Toast, ToastContainer, Spinner } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Modal, Alert, Toast, ToastContainer, Spinner, Badge } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaSearch, FaPlay, FaPause, FaStop, FaVolumeUp, FaExclamationTriangle, FaCheckCircle, FaBook, FaArrowLeft } from 'react-icons/fa';
+import { FaSearch, FaPlay, FaPause, FaStop, FaVolumeUp, FaExclamationTriangle, FaCheckCircle, FaBook, FaArrowLeft, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { quranSurahs } from '../data/quranData';
 
 const Quran = () => {
@@ -16,6 +16,9 @@ const Quran = () => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [notifications, setNotifications] = useState([]);
+  const [showTranslation, setShowTranslation] = useState(true);
+  const [showArabic, setShowArabic] = useState(true);
+  const [currentVerse, setCurrentVerse] = useState(0);
 
   const audioRef = useRef(null);
 
@@ -44,6 +47,7 @@ const Quran = () => {
     setSelectedSurah(surah);
     setShowReading(true);
     setLoading(true);
+    setCurrentVerse(0);
     showNotification(`Opening ${surah.name} for reading and listening`, 'success');
   };
 
@@ -53,6 +57,7 @@ const Quran = () => {
     }
     setShowReading(false);
     setSelectedSurah(null);
+    setCurrentVerse(0);
   };
 
   const togglePlayPause = () => {
@@ -86,6 +91,7 @@ const Quran = () => {
       audioRef.current.currentTime = 0;
       setIsPlaying(false);
       setCurrentTime(0);
+      setCurrentVerse(0);
       showNotification('Recitation stopped', 'info');
     }
   };
@@ -93,6 +99,13 @@ const Quran = () => {
   const handleTimeUpdate = () => {
     if (audioRef.current) {
       setCurrentTime(audioRef.current.currentTime);
+      
+      // Update current verse based on audio progress
+      if (selectedSurah && selectedSurah.text) {
+        const progress = audioRef.current.currentTime / audioRef.current.duration;
+        const verseIndex = Math.floor(progress * selectedSurah.text.length);
+        setCurrentVerse(Math.min(verseIndex, selectedSurah.text.length - 1));
+      }
     }
   };
 
@@ -104,23 +117,25 @@ const Quran = () => {
   };
 
   const handleProgressClick = (e) => {
-    if (audioRef.current && duration) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const pos = (e.clientX - rect.left) / rect.width;
-      const newTime = pos * duration;
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-    }
+    if (!audioRef.current) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const percentage = clickX / rect.width;
+    const newTime = percentage * audioRef.current.duration;
+    
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
   };
 
   const handleAudioError = (error) => {
+    console.error('Audio error:', error);
     setLoading(false);
     setIsPlaying(false);
-    showError(`Unable to load audio. This might be due to network issues or the audio file being unavailable. Please check your internet connection and try again. Error: ${error.message || 'Unknown error'}`);
+    showError('Failed to load audio. Please check your internet connection and try again.');
   };
 
   const formatTime = (time) => {
-    if (isNaN(time)) return '0:00';
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -137,39 +152,50 @@ const Quran = () => {
     surah.english.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  useEffect(() => {
-    if (selectedSurah && audioRef.current) {
-      setCurrentAudio(selectedSurah.audio);
-      audioRef.current.src = selectedSurah.audio;
+  const scrollToVerse = (verseNumber) => {
+    const verseElement = document.getElementById(`verse-${verseNumber}`);
+    if (verseElement) {
+      verseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [selectedSurah]);
+  };
+
+  useEffect(() => {
+    if (currentVerse > 0 && selectedSurah) {
+      scrollToVerse(currentVerse + 1);
+    }
+  }, [currentVerse, selectedSurah]);
 
   return (
     <div style={{ paddingTop: '100px', minHeight: '100vh' }}>
       <Container>
+        {/* Header */}
+        <Row className="mb-4">
+          <Col>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <h1 className="text-center mb-3">
+                <FaBook className="me-3" />
+                القرآن الكريم
+              </h1>
+              <p className="text-center text-muted mb-4">
+                The Holy Quran - Complete with Arabic text, translations, and audio recitations
+              </p>
+            </motion.div>
+          </Col>
+        </Row>
+
         {!showReading ? (
           <>
-            {/* Main Quran Page */}
-            <Row>
-              <Col>
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                >
-                  <h1 className="text-center mb-4">القرآن الكريم</h1>
-                  <p className="text-center mb-5">The Holy Quran - Read, Listen, and Reflect</p>
-                </motion.div>
-              </Col>
-            </Row>
-
             {/* Search Bar */}
-            <Row className="justify-content-center mb-4">
-              <Col lg={6}>
+            <Row className="mb-4">
+              <Col lg={6} className="mx-auto">
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
                 >
                   <div className="search-container">
                     <input
@@ -181,22 +207,18 @@ const Quran = () => {
                     />
                     <FaSearch className="search-icon" />
                   </div>
-                  <small className="text-muted d-block mt-2 text-center">
-                    {filteredSurahs.length} Surahs found
-                  </small>
                 </motion.div>
               </Col>
             </Row>
 
             {/* Surahs List */}
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               {filteredSurahs.length > 0 ? (
                 <Row>
                   {filteredSurahs.map((surah, index) => (
                     <Col lg={4} md={6} key={surah.number} className="mb-4">
                       <motion.div
-                        layout
-                        initial={{ opacity: 0, y: 50 }}
+                        initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -50 }}
                         transition={{ delay: index * 0.1 }}
@@ -219,9 +241,12 @@ const Quran = () => {
                             <p className="surah-arabic">{surah.arabic}</p>
                             <p className="surah-english text-muted">{surah.english}</p>
                             <div className="surah-info">
-                              <small className="text-muted">
-                                {surah.verses} verses • {surah.type}
-                              </small>
+                              <Badge bg="primary" className="me-2">
+                                {surah.verses} verses
+                              </Badge>
+                              <Badge bg="secondary">
+                                {surah.type}
+                              </Badge>
                             </div>
                           </Card.Body>
                         </Card>
@@ -269,6 +294,25 @@ const Quran = () => {
                       {selectedSurah?.english} • {selectedSurah?.verses} verses • {selectedSurah?.type}
                     </p>
                   </div>
+
+                  {/* Display Controls */}
+                  <div className="display-controls mb-3">
+                    <Button
+                      variant={showArabic ? "primary" : "outline-primary"}
+                      size="sm"
+                      className="me-2"
+                      onClick={() => setShowArabic(!showArabic)}
+                    >
+                      {showArabic ? <FaEye /> : <FaEyeSlash />} Arabic
+                    </Button>
+                    <Button
+                      variant={showTranslation ? "primary" : "outline-primary"}
+                      size="sm"
+                      onClick={() => setShowTranslation(!showTranslation)}
+                    >
+                      {showTranslation ? <FaEye /> : <FaEyeSlash />} Translation
+                    </Button>
+                  </div>
                 </motion.div>
               </Col>
             </Row>
@@ -298,14 +342,19 @@ const Quran = () => {
                         selectedSurah.text.map((verse, index) => (
                           <motion.div
                             key={verse.verse}
-                            className="verse-container"
+                            id={`verse-${verse.verse}`}
+                            className={`verse-container ${currentVerse === index ? 'current-verse' : ''}`}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
+                            transition={{ delay: index * 0.05 }}
                           >
                             <div className="verse-number">{verse.verse}</div>
-                            <div className="verse-arabic">{verse.arabic}</div>
-                            <div className="verse-translation">{verse.translation}</div>
+                            {showArabic && (
+                              <div className="verse-arabic">{verse.arabic}</div>
+                            )}
+                            {showTranslation && (
+                              <div className="verse-translation">{verse.translation}</div>
+                            )}
                           </motion.div>
                         ))
                       ) : (
@@ -399,76 +448,63 @@ const Quran = () => {
                     </div>
                   </div>
 
+                  {/* Hidden audio element */}
                   <audio
                     ref={audioRef}
+                    src={selectedSurah?.audio}
                     onTimeUpdate={handleTimeUpdate}
                     onLoadedMetadata={handleLoadedMetadata}
-                    onLoadStart={() => setLoading(true)}
-                    onCanPlay={() => setLoading(false)}
                     onError={handleAudioError}
-                    onEnded={() => {
-                      setIsPlaying(false);
-                      setCurrentTime(0);
-                      showNotification('Recitation completed', 'success');
-                    }}
+                    preload="metadata"
                   />
                 </Card.Body>
               </Card>
             </motion.div>
           )}
         </AnimatePresence>
-      </Container>
 
-      {/* Beautiful Error Modal */}
-      <Modal show={showErrorModal} onHide={closeErrorModal} centered>
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-        >
-          <Modal.Header closeButton className="border-0">
-            <Modal.Title className="text-danger">
-              <FaExclamationTriangle className="me-2" />
-              Audio Error
-            </Modal.Title>
+        {/* Error Modal */}
+        <Modal show={showErrorModal} onHide={closeErrorModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>Error</Modal.Title>
           </Modal.Header>
-          <Modal.Body className="text-center">
-            <div className="mb-3">
-              <FaExclamationTriangle size={50} className="text-warning" />
-            </div>
-            <p>{errorMessage}</p>
+          <Modal.Body>
+            <Alert variant="danger">
+              <FaExclamationTriangle className="me-2" />
+              {errorMessage}
+            </Alert>
           </Modal.Body>
-          <Modal.Footer className="border-0 justify-content-center">
-            <Button variant="primary" onClick={closeErrorModal}>
-              Understood
+          <Modal.Footer>
+            <Button variant="secondary" onClick={closeErrorModal}>
+              Close
             </Button>
           </Modal.Footer>
-        </motion.div>
-      </Modal>
+        </Modal>
 
-      {/* Toast Notifications */}
-      <ToastContainer position="top-end" className="p-3" style={{ zIndex: 1050, top: '100px' }}>
-        {notifications.map((notification) => (
-          <Toast 
-            key={notification.id} 
-            show={true} 
-            delay={5000} 
-            autohide
-            bg={notification.type === 'error' ? 'danger' : notification.type === 'success' ? 'success' : notification.type === 'warning' ? 'warning' : 'info'}
-          >
-            <Toast.Header closeButton={false}>
-              <strong className="me-auto">
-                {notification.type === 'error' ? 'Error' : 
-                 notification.type === 'success' ? 'Success' : 
-                 notification.type === 'warning' ? 'Warning' : 'Info'}
-              </strong>
-            </Toast.Header>
-            <Toast.Body className="text-white">
-              {notification.message}
-            </Toast.Body>
-          </Toast>
-        ))}
-      </ToastContainer>
+        {/* Toast Notifications */}
+        <ToastContainer position="top-end" className="p-3">
+          {notifications.map((notification) => (
+            <Toast 
+              key={notification.id} 
+              show={true} 
+              delay={5000} 
+              autohide
+              bg={notification.type === 'error' ? 'danger' : notification.type === 'success' ? 'success' : notification.type === 'warning' ? 'warning' : 'info'}
+            >
+              <Toast.Header closeButton={false}>
+                <strong className="me-auto">
+                  {notification.type === 'error' ? 'Error' : 
+                   notification.type === 'success' ? 'Success' : 
+                   notification.type === 'warning' ? 'Warning' : 'Info'}
+                </strong>
+              </Toast.Header>
+              <Toast.Body className="text-white">
+                {notification.message}
+              </Toast.Body>
+            </Toast>
+          ))}
+        </ToastContainer>
+      </Container>
     </div>
   );
 };
