@@ -1,0 +1,285 @@
+/* Names of Allah Component Styles */
+.names-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2rem;
+  padding: 2rem 0;
+}
+
+.name-card {
+  background: var(--gradient-card);
+  border: 2px solid transparent;
+  border-radius: 20px;
+  padding: 2rem;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.name-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: all 0.5s ease;
+}
+
+.name-card:hover::before {
+  left: 0;
+  opacity: 0.1;
+}
+
+.name-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary-color);
+}
+
+.name-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.name-number {
+  background: var(--gradient-primary);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+  position: relative;
+  z-index: 2;
+}
+
+.favorite-btn {
+  position: relative;
+  z-index: 2;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.name-arabic {
+  font-size: 2rem;
+  font-family: 'Amiri', serif;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+  position: relative;
+  z-index: 2;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.name-transliteration {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 2;
+  color: var(--text-color);
+}
+
+.name-english {
+  font-size: 1rem;
+  color: var(--text-color);
+  opacity: 0.8;
+  position: relative;
+  z-index: 2;
+}
+
+.name-meaning {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  opacity: 0.7;
+  position: relative;
+  z-index: 2;
+  font-style: italic;
+}
+
+.name-category {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.category-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.stats-card {
+  background: var(--gradient-card);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-hover);
+}
+
+.stat-item {
+  text-align: center;
+  padding: 1rem;
+}
+
+.stat-item h3 {
+  color: var(--primary-color);
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.stat-item p {
+  color: var(--text-color);
+  opacity: 0.8;
+  margin: 0;
+}
+
+/* Name Modal Styles */
+.name-modal .modal-content {
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+
+.name-arabic-large {
+  font-size: 3rem;
+  font-family: 'Amiri', serif;
+  color: var(--primary-color);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.name-transliteration-large {
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+.name-english-large {
+  color: var(--text-color);
+  opacity: 0.9;
+}
+
+.name-meaning-large {
+  color: var(--text-color);
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.detail-card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 15px;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.3s ease;
+}
+
+.detail-card:hover {
+  background: rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+}
+
+/* Enhanced Search Styles */
+.search-container {
+  margin-bottom: 2rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 1.5rem 4rem 1.5rem 2rem;
+  border: 3px solid transparent;
+  border-radius: 50px;
+  font-size: 1.2rem;
+  box-shadow: var(--shadow);
+  background: var(--gradient-card);
+  color: var(--text-color);
+  outline: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 25px rgba(46, 125, 50, 0.3);
+  transform: translateY(-2px);
+}
+
+.search-icon {
+  position: absolute;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--primary-color);
+  font-size: 1.2rem;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Enhanced Responsive Design */
+@media (max-width: 768px) {
+  .names-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .name-card {
+    padding: 1.5rem;
+  }
+  
+  .name-arabic {
+    font-size: 1.5rem;
+  }
+  
+  .name-transliteration {
+    font-size: 1rem;
+  }
+  
+  .name-arabic-large {
+    font-size: 2rem;
+  }
+  
+  .category-filter {
+    justify-content: center;
+  }
+  
+  .stat-item h3 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .name-card {
+    padding: 1rem;
+  }
+  
+  .name-arabic {
+    font-size: 1.2rem;
+  }
+  
+  .name-transliteration {
+    font-size: 0.9rem;
+  }
+  
+  .name-arabic-large {
+    font-size: 1.5rem;
+  }
+}

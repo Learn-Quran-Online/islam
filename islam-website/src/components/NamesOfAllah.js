@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Button, Modal, Badge } from 'react-bootstrap';
 import { motion } from 'framer-motion';
+import './NamesOfAllah.css';
 import { 
   FaHeart, 
   FaStar, 

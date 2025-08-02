@@ -17,7 +17,7 @@ import {
   FaSearch,
   FaFilter
 } from 'react-icons/fa';
-import { quranData } from '../data/quranData';
+import { quranSurahs } from '../data/quranData';
 
 const Quran = () => {
   const [selectedSurah, setSelectedSurah] = useState(null);
@@ -28,32 +28,27 @@ const Quran = () => {
   const [volume, setVolume] = useState(0.7);
   const [isMuted, setIsMuted] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredSurahs, setFilteredSurahs] = useState(quranData);
+  const [filteredSurahs, setFilteredSurahs] = useState(quranSurahs);
   const [currentVerse, setCurrentVerse] = useState(0);
 
   // Generate complete Surah text based on actual content
   const generateFullSurahText = (surah) => {
     if (!surah) return '';
 
-    const { name, arabicName, englishName, verses, revelationType, description } = surah;
+    const { name, arabic, english, verses, type } = surah;
     
     // Create a comprehensive text structure
     let fullText = `بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ\n\n`;
     
     // Add Surah header
-    fullText += `سُورَةُ ${arabicName}\n`;
-    fullText += `(${englishName})\n\n`;
-    
-    // Add description if available
-    if (description) {
-      fullText += `${description}\n\n`;
-    }
+    fullText += `سُورَةُ ${arabic}\n`;
+    fullText += `(${english})\n\n`;
     
     // Generate verses based on the actual verses count
     for (let i = 1; i <= verses; i++) {
       // Use actual verse content if available, otherwise generate meaningful content
       const verseContent = surah.text && surah.text[i - 1] 
-        ? surah.text[i - 1] 
+        ? surah.text[i - 1].arabic 
         : generateVerseContent(name, i, verses);
       
       fullText += `(${i}) ${verseContent}\n\n`;
@@ -114,10 +109,10 @@ const Quran = () => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
     
-    const filtered = quranData.filter(surah => 
+    const filtered = quranSurahs.filter(surah => 
       surah.name.toLowerCase().includes(term) ||
-      surah.englishName.toLowerCase().includes(term) ||
-      surah.arabicName.includes(term)
+      surah.english.toLowerCase().includes(term) ||
+      surah.arabic.includes(term)
     );
     setFilteredSurahs(filtered);
   };
@@ -194,18 +189,18 @@ const Quran = () => {
                 transition={{ delay: index * 0.05 }}
               >
                 <Card 
-                  className={`surah-card ${selectedSurah?.id === surah.id ? 'selected' : ''}`}
+                  className={`surah-card ${selectedSurah?.number === surah.number ? 'selected' : ''}`}
                   onClick={() => handleSurahClick(surah)}
                 >
                   <Card.Body>
                     <div className="d-flex align-items-center">
-                      <div className="surah-number">{surah.id}</div>
+                      <div className="surah-number">{surah.number}</div>
                       <div className="surah-info">
-                        <div className="surah-arabic">{surah.arabicName}</div>
-                        <div className="surah-english">{surah.englishName}</div>
+                        <div className="surah-arabic">{surah.arabic}</div>
+                        <div className="surah-english">{surah.english}</div>
                         <div className="surah-details">
                           <span className="badge bg-primary me-2">{surah.verses} Verses</span>
-                          <span className="badge bg-secondary">{surah.revelationType}</span>
+                          <span className="badge bg-secondary">{surah.type}</span>
                         </div>
                       </div>
                     </div>
@@ -229,12 +224,12 @@ const Quran = () => {
                   <Card.Header className="surah-header">
                     <div className="d-flex align-items-center justify-content-between">
                       <div>
-                        <h3 className="surah-title">{selectedSurah.arabicName}</h3>
-                        <p className="surah-subtitle">{selectedSurah.englishName}</p>
+                        <h3 className="surah-title">{selectedSurah.arabic}</h3>
+                        <p className="surah-subtitle">{selectedSurah.english}</p>
                       </div>
                       <div className="surah-stats">
                         <span className="badge bg-primary me-2">{selectedSurah.verses} Verses</span>
-                        <span className="badge bg-secondary">{selectedSurah.revelationType}</span>
+                        <span className="badge bg-secondary">{selectedSurah.type}</span>
                       </div>
                     </div>
                   </Card.Header>
@@ -261,11 +256,11 @@ const Quran = () => {
                               <div className="verse-number">{verseNumber}</div>
                             )}
                             <div className="verse-arabic">{verse.replace(/^\(\d+\)\s*/, '')}</div>
-                            {verseNumber && (
-                              <div className="verse-translation">
-                                Translation of verse {verseNumber} - {selectedSurah.englishName}
-                              </div>
-                            )}
+                                                         {verseNumber && (
+                               <div className="verse-translation">
+                                 Translation of verse {verseNumber} - {selectedSurah.english}
+                               </div>
+                             )}
                           </motion.div>
                         );
                       })}
@@ -331,12 +326,12 @@ const Quran = () => {
                   </div>
                 </div>
                 
-                {isPlaying && (
-                  <div className="playing-indicator">
-                    <FaPlay className="me-2" />
-                    Playing: {selectedSurah.englishName}
-                  </div>
-                )}
+                                 {isPlaying && (
+                   <div className="playing-indicator">
+                     <FaPlay className="me-2" />
+                     Playing: {selectedSurah.english}
+                   </div>
+                 )}
               </Card.Body>
             </Card>
           </div>
