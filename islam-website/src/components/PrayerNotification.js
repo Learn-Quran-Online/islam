@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Toast, ToastContainer, Button } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaMosque, FaBell, FaVolumeUp, FaClock, FaStar } from 'react-icons/fa';
+import { FaMosque, FaBell, FaVolumeUp, FaClock, FaStar, FaVolumeMute } from 'react-icons/fa';
 import { getPrayerTimes, getCurrentPrayer } from '../utils/prayerTimes';
 
 const PrayerNotification = () => {
@@ -10,6 +10,7 @@ const PrayerNotification = () => {
   const [notificationPermission, setNotificationPermission] = useState('default');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [lastNotifiedPrayer, setLastNotifiedPrayer] = useState(null);
+  const [isAlarmPlaying, setIsAlarmPlaying] = useState(false);
 
   useEffect(() => {
     // Request notification permission
@@ -29,6 +30,12 @@ const PrayerNotification = () => {
       setSoundEnabled(JSON.parse(savedSoundSetting));
     }
 
+    // Get last notified prayer from localStorage
+    const savedLastNotified = localStorage.getItem('lastNotifiedPrayer');
+    if (savedLastNotified) {
+      setLastNotifiedPrayer(savedLastNotified);
+    }
+
     // Fetch prayer times
     const fetchPrayerTimes = async () => {
       try {
@@ -45,10 +52,10 @@ const PrayerNotification = () => {
   useEffect(() => {
     if (!prayerTimes) return;
 
-    // Check for prayer times every minute
+    // Check for prayer times every 30 seconds for more accurate notifications
     const interval = setInterval(() => {
       checkPrayerTime();
-    }, 60000); // Check every minute
+    }, 30000); // Check every 30 seconds
 
     // Initial check
     checkPrayerTime();
@@ -167,11 +174,12 @@ const PrayerNotification = () => {
     if (notificationPermission === 'granted') {
       const notification = new Notification(`${prayerName} Prayer Time`, {
         body: message,
-        icon: '/icon-192x192.png', // Add an icon if you have one
+        icon: '/icon-192x192.png',
         badge: '/icon-72x72.png',
         tag: `prayer-${prayerName}`,
-        vibrate: [200, 100, 200],
-        requireInteraction: true
+        vibrate: [200, 100, 200, 100, 200],
+        requireInteraction: true,
+        silent: false
       });
 
       notification.onclick = () => {
@@ -179,15 +187,15 @@ const PrayerNotification = () => {
         notification.close();
       };
 
-      // Auto close after 10 seconds
+      // Auto close after 15 seconds
       setTimeout(() => {
         notification.close();
-      }, 10000);
+      }, 15000);
     }
 
-    // Play notification sound
+    // Play notification sound with alarm
     if (soundEnabled) {
-      playPrayerSound();
+      playPrayerAlarm();
     }
   };
 
@@ -205,14 +213,18 @@ const PrayerNotification = () => {
     }
   };
 
-  const playPrayerSound = () => {
+  const playPrayerAlarm = () => {
+    if (isAlarmPlaying) return;
+    
+    setIsAlarmPlaying(true);
+    
     try {
-      // Create a more complex and beautiful notification sound
+      // Create a more complex and beautiful Adhan-like sound
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
       
       // Create a sequence of beautiful tones for Adhan-like sound
-      const frequencies = [523.25, 587.33, 659.25, 698.46, 783.99]; // C5, D5, E5, F5, G5
-      const duration = 0.8; // Duration of each tone
+      const frequencies = [523.25, 587.33, 659.25, 698.46, 783.99, 880.00]; // C5, D5, E5, F5, G5, A5
+      const duration = 1.2; // Duration of each tone
       
       frequencies.forEach((freq, index) => {
         const oscillator = audioContext.createOscillator();
@@ -225,11 +237,11 @@ const PrayerNotification = () => {
         oscillator.type = 'sine';
         
         // Create a gentle envelope
-        const startTime = audioContext.currentTime + (index * 0.3);
+        const startTime = audioContext.currentTime + (index * 0.4);
         const endTime = startTime + duration;
         
         gainNode.gain.setValueAtTime(0, startTime);
-        gainNode.gain.linearRampToValueAtTime(0.3, startTime + 0.1);
+        gainNode.gain.linearRampToValueAtTime(0.4, startTime + 0.1);
         gainNode.gain.exponentialRampToValueAtTime(0.01, endTime);
         
         oscillator.start(startTime);
@@ -248,17 +260,23 @@ const PrayerNotification = () => {
         finalOscillator.type = 'sine';
         
         finalGain.gain.setValueAtTime(0, audioContext.currentTime);
-        finalGain.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.1);
-        finalGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2);
+        finalGain.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.1);
+        finalGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 3);
         
         finalOscillator.start();
-        finalOscillator.stop(audioContext.currentTime + 2);
-      }, 1500);
+        finalOscillator.stop(audioContext.currentTime + 3);
+        
+        // Reset alarm state after completion
+        setTimeout(() => {
+          setIsAlarmPlaying(false);
+        }, 3000);
+      }, 2400);
       
     } catch (error) {
-      console.error('Error playing prayer sound:', error);
+      console.error('Error playing prayer alarm:', error);
       // Fallback to a simple beep
       playSimpleBeep();
+      setIsAlarmPlaying(false);
     }
   };
 
@@ -275,11 +293,11 @@ const PrayerNotification = () => {
       oscillator.type = 'sine';
       
       gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.1);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
       
       oscillator.start();
-      oscillator.stop(audioContext.currentTime + 0.5);
+      oscillator.stop(audioContext.currentTime + 0.8);
     } catch (error) {
       console.error('Error playing reminder sound:', error);
     }
@@ -297,11 +315,11 @@ const PrayerNotification = () => {
       oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
       oscillator.type = 'square';
       
-      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
       
       oscillator.start();
-      oscillator.stop(audioContext.currentTime + 0.3);
+      oscillator.stop(audioContext.currentTime + 0.5);
     } catch (error) {
       console.error('Error playing simple beep:', error);
     }
@@ -313,8 +331,8 @@ const PrayerNotification = () => {
     
     setNotifications(prev => [...prev, newNotification]);
     
-    // Auto remove notification after 8 seconds for prayer, 5 seconds for reminder
-    const timeout = notification.priority === 'high' ? 8000 : 5000;
+    // Auto remove notification after 10 seconds for prayer, 6 seconds for reminder
+    const timeout = notification.priority === 'high' ? 10000 : 6000;
     setTimeout(() => {
       removeNotification(id);
     }, timeout);
@@ -340,7 +358,7 @@ const PrayerNotification = () => {
 
   return (
     <>
-      {/* Notification Settings Button */}
+      {/* Enhanced Notification Settings Button */}
       <div className="prayer-notification-settings">
         <Button
           variant="outline-primary"
@@ -350,6 +368,7 @@ const PrayerNotification = () => {
         >
           <FaBell className="me-1" />
           Prayer Alerts
+          {soundEnabled && <span className="sound-indicator">🔊</span>}
         </Button>
         
         <div id="notification-settings" className="notification-settings-panel">
@@ -360,7 +379,7 @@ const PrayerNotification = () => {
               size="sm"
               onClick={toggleSound}
             >
-              <FaVolumeUp className="me-1" />
+              {soundEnabled ? <FaVolumeUp className="me-1" /> : <FaVolumeMute className="me-1" />}
               Sound {soundEnabled ? 'On' : 'Off'}
             </Button>
           </div>
@@ -383,10 +402,17 @@ const PrayerNotification = () => {
               ? '✓ Browser notifications enabled' 
               : 'Browser notifications disabled'}
           </small>
+          
+          <div className="mt-2">
+            <small className="text-info">
+              <FaClock className="me-1" />
+              Alerts 5 min before & at prayer time
+            </small>
+          </div>
         </div>
       </div>
 
-      {/* Toast Notifications */}
+      {/* Enhanced Toast Notifications */}
       <ToastContainer position="top-center" className="prayer-toast-container">
         <AnimatePresence>
           {notifications.map((notification) => (

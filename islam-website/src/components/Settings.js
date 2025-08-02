@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
 import { motion } from 'framer-motion';
-import { FaSun, FaMoon, FaUser, FaUpload, FaPalette, FaCog } from 'react-icons/fa';
+import { FaSun, FaMoon, FaUser, FaUpload, FaPalette, FaCog, FaBell, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 
 const Settings = ({ theme, toggleTheme, userProfile, updateProfile }) => {
   const [showAlert, setShowAlert] = useState(false);
@@ -129,11 +129,53 @@ const Settings = ({ theme, toggleTheme, userProfile, updateProfile }) => {
             </div>
           </motion.div>
 
-          {/* Profile Settings */}
+          {/* Notification Settings */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.4 }}
+          >
+            <div className="setting-group">
+              <h3 className="mb-4">
+                <FaBell className="me-2" />
+                Notifications
+              </h3>
+              
+              <div className="notification-settings">
+                <div className="setting-item">
+                  <div>
+                    <h6>Prayer Notifications</h6>
+                    <p className="text-muted mb-2">
+                      Receive alerts for prayer times and reminders
+                    </p>
+                  </div>
+                  <div className="d-flex align-items-center">
+                    <FaBell className="me-2" />
+                    <span className="badge bg-success">Enabled</span>
+                  </div>
+                </div>
+                
+                <div className="setting-item">
+                  <div>
+                    <h6>Sound Alerts</h6>
+                    <p className="text-muted mb-2">
+                      Play Adhan-like sounds for prayer notifications
+                    </p>
+                  </div>
+                  <div className="d-flex align-items-center">
+                    <FaVolumeUp className="me-2" />
+                    <span className="badge bg-success">Enabled</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Profile Settings */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.6 }}
           >
             <div className="setting-group">
               <h3 className="mb-4">
@@ -157,7 +199,7 @@ const Settings = ({ theme, toggleTheme, userProfile, updateProfile }) => {
                   </div>
                 )}
                 
-                <div className="d-flex gap-2">
+                <div className="d-flex gap-2 mt-3">
                   <Button 
                     className="upload-btn"
                     onClick={() => fileInputRef.current?.click()}
@@ -195,7 +237,7 @@ const Settings = ({ theme, toggleTheme, userProfile, updateProfile }) => {
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.8 }}
           >
             <div className="setting-group">
               <h3 className="mb-4">App Information</h3>
@@ -225,7 +267,7 @@ const Settings = ({ theme, toggleTheme, userProfile, updateProfile }) => {
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
+            transition={{ delay: 1.0 }}
           >
             <div className="setting-group">
               <h3 className="mb-4">Data Management</h3>
@@ -258,7 +300,7 @@ const Settings = ({ theme, toggleTheme, userProfile, updateProfile }) => {
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0 }}
+            transition={{ delay: 1.2 }}
           >
             <div className="setting-group">
               <h3 className="mb-4">About Islam360</h3>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Toast, ToastContainer } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Toast, ToastContainer, ProgressBar } from 'react-bootstrap';
 import { motion } from 'framer-motion';
-import { FaSearch, FaClock, FaPlay, FaHeart, FaDonate, FaMosque, FaDove, FaStar, FaExclamationTriangle, FaCalendarAlt, FaCompass, FaHands } from 'react-icons/fa';
+import { FaSearch, FaClock, FaPlay, FaHeart, FaDonate, FaMosque, FaDove, FaStar, FaExclamationTriangle, FaCalendarAlt, FaCompass, FaHands, FaPray, FaBook, FaLightbulb } from 'react-icons/fa';
 import { getPrayerTimes, getCurrentPrayer, formatTimeRemaining } from '../utils/prayerTimes';
 import { quranVerse, islamicVideos, searchableContent } from '../data/quranData';
 
@@ -15,6 +15,32 @@ const Home = () => {
   const [notifications, setNotifications] = useState([]);
   const [islamicDate, setIslamicDate] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [dailyQuote, setDailyQuote] = useState(null);
+  const [prayerProgress, setPrayerProgress] = useState(0);
+
+  // Daily Islamic Quotes
+  const islamicQuotes = [
+    {
+      arabic: "إِنَّ اللَّهَ مَعَ الصَّابِرِينَ",
+      english: "Indeed, Allah is with the patient.",
+      reference: "Quran 2:153"
+    },
+    {
+      arabic: "وَمَن يَتَوَكَّلْ عَلَى اللَّهِ فَهُوَ حَسْبُهُ",
+      english: "And whoever relies upon Allah - then He is sufficient for him.",
+      reference: "Quran 65:3"
+    },
+    {
+      arabic: "إِنَّ اللَّهَ لَا يُغَيِّرُ مَا بِقَوْمٍ حَتَّى يُغَيِّرُوا مَا بِأَنفُسِهِمْ",
+      english: "Indeed, Allah will not change the condition of a people until they change what is in themselves.",
+      reference: "Quran 13:11"
+    },
+    {
+      arabic: "الَّذِينَ آمَنُوا وَتَطْمَئِنُّ قُلُوبُهُم بِذِكْرِ اللَّهِ",
+      english: "Those who have believed and whose hearts are assured by the remembrance of Allah.",
+      reference: "Quran 13:28"
+    }
+  ];
 
   useEffect(() => {
     const fetchPrayerData = async () => {
@@ -57,11 +83,54 @@ const Home = () => {
     const islamicDay = currentDate.getDate();
     setIslamicDate(`${islamicDay} ${islamicMonth} ${islamicYear} AH`);
 
+    // Set daily quote
+    const today = new Date().getDate();
+    setDailyQuote(islamicQuotes[today % islamicQuotes.length]);
+
+    // Calculate prayer progress
+    const calculatePrayerProgress = () => {
+      if (!prayerTimes) return 0;
+      
+      const now = new Date();
+      const currentTime = now.getHours() * 60 + now.getMinutes();
+      const prayers = [
+        { name: 'Fajr', time: convertToMinutes(prayerTimes.Fajr) },
+        { name: 'Dhuhr', time: convertToMinutes(prayerTimes.Dhuhr) },
+        { name: 'Asr', time: convertToMinutes(prayerTimes.Asr) },
+        { name: 'Maghrib', time: convertToMinutes(prayerTimes.Maghrib) },
+        { name: 'Isha', time: convertToMinutes(prayerTimes.Isha) }
+      ];
+      
+      let completedPrayers = 0;
+      for (let prayer of prayers) {
+        if (currentTime >= prayer.time) {
+          completedPrayers++;
+        }
+      }
+      
+      return (completedPrayers / 5) * 100;
+    };
+
+    setPrayerProgress(calculatePrayerProgress());
+
     return () => {
       clearInterval(interval);
       clearInterval(timeInterval);
     };
   }, [prayerTimes]);
+
+  const convertToMinutes = (timeString) => {
+    const [time, modifier] = timeString.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    
+    if (modifier === 'PM' && hours !== 12) {
+      hours += 12;
+    } else if (modifier === 'AM' && hours === 12) {
+      hours = 0;
+    }
+    
+    return hours * 60 + minutes;
+  };
 
   const showNotification = (message, type = 'info') => {
     const id = Date.now();
@@ -164,8 +233,15 @@ const Home = () => {
         {createParticles()}
       </div>
 
-      {/* Enhanced Moving Images Section with Prayer Times and Islamic Date */}
+      {/* Enhanced Moving Images Section with Mosque Background */}
       <section className="enhanced-moving-section">
+        {/* Mosque Background */}
+        <div className="mosque-background">
+          <div className="mosque-image"></div>
+          <div className="floating-water"></div>
+          <div className="water-reflection"></div>
+        </div>
+
         {/* Left Side - Current and Next Prayer */}
         <div className="prayer-side">
           {currentPrayerInfo && (
@@ -220,21 +296,21 @@ const Home = () => {
           </motion.div>
 
           {/* Multiple Flying Birds */}
-          {[...Array(3)].map((_, i) => (
+          {[...Array(5)].map((_, i) => (
             <motion.div
               key={i}
               className="flying-bird"
               style={{
-                left: `${20 + i * 30}%`,
-                top: `${20 + (i % 2) * 30}%`
+                left: `${15 + i * 20}%`,
+                top: `${15 + (i % 3) * 25}%`
               }}
               animate={{ 
                 x: [0, 100, 200, 100, 0],
-                y: [0, -40, 20, -30, 0],
+                y: [0, -30, 20, -25, 0],
                 rotate: [0, 15, -15, 10, 0]
               }}
               transition={{ 
-                duration: 12 + i * 2, 
+                duration: 15 + i * 3, 
                 repeat: Infinity, 
                 delay: i * 2,
                 ease: "easeInOut"
@@ -245,13 +321,13 @@ const Home = () => {
           ))}
 
           {/* Floating Stars */}
-          {[...Array(6)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <motion.div
               key={i}
               className="floating-star"
               style={{
-                left: `${20 + i * 15}%`,
-                top: `${30 + (i % 3) * 20}%`
+                left: `${10 + i * 12}%`,
+                top: `${20 + (i % 4) * 15}%`
               }}
               animate={{ 
                 scale: [1, 1.3, 1],
@@ -259,9 +335,9 @@ const Home = () => {
                 opacity: [0.3, 1, 0.3]
               }}
               transition={{ 
-                duration: 3, 
+                duration: 4, 
                 repeat: Infinity, 
-                delay: i * 0.5,
+                delay: i * 0.6,
                 ease: "easeInOut"
               }}
             >
@@ -347,9 +423,60 @@ const Home = () => {
         </Container>
       </section>
 
-      <Container className="py-4">
-        {/* Enhanced Search Bar */}
-        <Row className="justify-content-center mb-4">
+      <Container className="py-5">
+        {/* Daily Islamic Quote */}
+        {dailyQuote && (
+          <Row className="mb-5">
+            <Col>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Card className="daily-quote-card">
+                  <Card.Body className="text-center">
+                    <FaLightbulb className="mb-3" style={{ fontSize: '2rem', color: '#FFD700' }} />
+                    <h4>Daily Islamic Quote</h4>
+                    <div className="quote-arabic mb-3">{dailyQuote.arabic}</div>
+                    <div className="quote-english mb-2">"{dailyQuote.english}"</div>
+                    <small className="text-muted">- {dailyQuote.reference}</small>
+                  </Card.Body>
+                </Card>
+              </motion.div>
+            </Col>
+          </Row>
+        )}
+
+        {/* Prayer Progress Tracker */}
+        <Row className="mb-5">
+          <Col>
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+            >
+              <Card className="prayer-progress-card">
+                <Card.Body>
+                  <div className="d-flex align-items-center mb-3">
+                    <FaPray className="me-2" style={{ fontSize: '1.5rem', color: '#4CAF50' }} />
+                    <h5 className="mb-0">Today's Prayer Progress</h5>
+                  </div>
+                  <ProgressBar 
+                    now={prayerProgress} 
+                    className="mb-2"
+                    style={{ height: '10px' }}
+                  />
+                  <small className="text-muted">
+                    {Math.round(prayerProgress)}% of daily prayers completed
+                  </small>
+                </Card.Body>
+              </Card>
+            </motion.div>
+          </Col>
+        </Row>
+
+        {/* Enhanced Search Bar with Better Spacing */}
+        <Row className="justify-content-center mb-5">
           <Col lg={8}>
             <motion.div 
               className="search-container"
@@ -373,7 +500,7 @@ const Home = () => {
               {/* Search Results */}
               {showSearchResults && (
                 <motion.div
-                  className="mt-3"
+                  className="mt-4"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
@@ -420,8 +547,8 @@ const Home = () => {
           </Col>
         </Row>
 
-        {/* Enhanced Quran Verse */}
-        <Row className="mb-4">
+        {/* Enhanced Quran Verse with White Text */}
+        <Row className="mb-5">
           <Col>
             <motion.div
               initial={{ opacity: 0, y: 50 }}
@@ -443,15 +570,15 @@ const Home = () => {
           </Col>
         </Row>
 
-        {/* Enhanced Islamic Videos */}
-        <Row className="mb-4">
+        {/* Enhanced Islamic Videos with Better Spacing */}
+        <Row className="mb-5">
           <Col>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.3 }}
             >
-              <h2 className="text-center mb-4">Islamic Content</h2>
+              <h2 className="text-center mb-5">Islamic Content</h2>
               <Row>
                 {islamicVideos.map((video, index) => (
                   <Col md={4} key={video.id} className="mb-4">
@@ -497,7 +624,7 @@ const Home = () => {
           </Col>
         </Row>
 
-        {/* Enhanced Support Section */}
+        {/* Enhanced Support Section with Better Spacing */}
         <Row>
           <Col>
             <motion.div

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Modal, Button, Alert } from 'react-bootstrap';
 import { motion } from 'framer-motion';
-import { FaPray, FaKaaba, FaStar, FaMoon, FaClock, FaExclamationTriangle } from 'react-icons/fa';
+import { FaPray, FaKaaba, FaStar, FaMoon, FaClock, FaExclamationTriangle, FaMosque, FaCalendarAlt } from 'react-icons/fa';
 import { getPrayerTimes } from '../utils/prayerTimes';
 
 const Ibadyat = () => {
@@ -10,6 +10,7 @@ const Ibadyat = () => {
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentPrayer, setCurrentPrayer] = useState(null);
 
   useEffect(() => {
     const fetchPrayerTimes = async () => {
@@ -17,24 +18,59 @@ const Ibadyat = () => {
         setLoading(true);
         const times = await getPrayerTimes();
         setPrayerTimes(times);
+        
+        // Determine current prayer
+        const now = new Date();
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const prayers = [
+          { name: 'Fajr', time: convertToMinutes(times.Fajr) },
+          { name: 'Dhuhr', time: convertToMinutes(times.Dhuhr) },
+          { name: 'Asr', time: convertToMinutes(times.Asr) },
+          { name: 'Maghrib', time: convertToMinutes(times.Maghrib) },
+          { name: 'Isha', time: convertToMinutes(times.Isha) }
+        ];
+        
+        let current = prayers[prayers.length - 1];
+        for (let i = 0; i < prayers.length; i++) {
+          if (currentTime < prayers[i].time) {
+            current = i > 0 ? prayers[i - 1] : prayers[prayers.length - 1];
+            break;
+          }
+        }
+        setCurrentPrayer(current);
+        
         setError(null);
       } catch (err) {
         console.error('Error fetching prayer times:', err);
         setError('Failed to load prayer times. Please try again later.');
-        // Set fallback prayer times
-        setPrayerTimes({
+        // Set fallback prayer times for major cities
+        const fallbackTimes = {
           Fajr: '05:30',
           Dhuhr: '12:15',
           Asr: '15:45',
-          Maghrib: '18:30',
-          Isha: '20:00'
-        });
+          Maghrib: '17:30',
+          Isha: '19:00'
+        };
+        setPrayerTimes(fallbackTimes);
       } finally {
         setLoading(false);
       }
     };
     fetchPrayerTimes();
   }, []);
+
+  const convertToMinutes = (timeString) => {
+    const [time, modifier] = timeString.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    
+    if (modifier === 'PM' && hours !== 12) {
+      hours += 12;
+    } else if (modifier === 'AM' && hours === 12) {
+      hours = 0;
+    }
+    
+    return hours * 60 + minutes;
+  };
 
   // Use useMemo or create ibadyatData inside useEffect to ensure it updates when prayerTimes changes
   const getIbadyatData = () => {
@@ -198,62 +234,44 @@ const Ibadyat = () => {
           </Row>
         )}
 
-        {/* Ibadyat Cards Grid */}
-        <Row className="ibadyat-grid">
-          {Object.entries(ibadyatData).map(([key, item], index) => {
-            const IconComponent = item.icon;
-            return (
-              <Col key={key} lg={3} md={6} className="mb-4">
-                <motion.div
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.2 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div 
-                    className="ibadyat-card"
-                    onClick={() => openModal(item)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <IconComponent 
-                      className="ibadyat-icon" 
-                      style={{ color: item.color }}
-                    />
-                    <h4>{item.title}</h4>
-                    <p>Click to learn more</p>
-                  </div>
-                </motion.div>
-              </Col>
-            );
-          })}
-        </Row>
-
-        {/* Prayer Times Section */}
+        {/* Enhanced Prayer Times Section */}
         {prayerTimes && !loading && (
-          <Row className="mt-5">
+          <Row className="mb-5">
             <Col>
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: 0.2 }}
               >
-                <Card className="card-custom">
-                  <Card.Header className="card-header-custom">
+                <Card className="prayer-times-card">
+                  <Card.Header className="prayer-times-header">
                     <FaClock className="me-2" />
-                    Today's Prayer Times - Gujranwala
+                    Today's Prayer Times - Gujranwala, Lahore, Islamabad
                   </Card.Header>
                   <Card.Body>
                     <div className="prayer-times-grid">
                       {Object.entries(prayerTimes).map(([prayer, time]) => {
                         if (prayer === 'date') return null;
+                        const isCurrent = currentPrayer && currentPrayer.name === prayer;
                         return (
-                          <div key={prayer} className="prayer-time-item">
-                            <h5>{prayer}</h5>
-                            <h4>{time}</h4>
+                          <div key={prayer} className={`prayer-time-item ${isCurrent ? 'current-prayer' : ''}`}>
+                            <div className="prayer-icon">
+                              <FaMosque />
+                            </div>
+                            <div className="prayer-info">
+                              <h5>{prayer}</h5>
+                              <h4>{time}</h4>
+                              {isCurrent && <span className="current-badge">Current</span>}
+                            </div>
                           </div>
                         );
                       })}
+                    </div>
+                    <div className="prayer-location-info">
+                      <small className="text-muted">
+                        <FaCalendarAlt className="me-1" />
+                        Times calculated for Gujranwala, Pakistan (University of Islamic Sciences, Karachi method)
+                      </small>
                     </div>
                   </Card.Body>
                 </Card>
@@ -261,6 +279,41 @@ const Ibadyat = () => {
             </Col>
           </Row>
         )}
+
+        {/* Enhanced Ibadyat Cards Grid */}
+        <Row className="ibadyat-grid">
+          {Object.entries(ibadyatData).map(([key, item], index) => {
+            const IconComponent = item.icon;
+            return (
+              <Col key={key} lg={6} md={6} className="mb-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.2 }}
+                  whileHover={{ scale: 1.02, y: -5 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div 
+                    className="ibadyat-card"
+                    onClick={() => openModal(item)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div className="ibadyat-icon-container">
+                      <IconComponent 
+                        className="ibadyat-icon" 
+                        style={{ color: item.color }}
+                      />
+                    </div>
+                    <div className="ibadyat-content">
+                      <h4>{item.title}</h4>
+                      <p>Click to learn more about this act of worship</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </Col>
+            );
+          })}
+        </Row>
 
         {/* Loading state */}
         {loading && (
@@ -275,11 +328,11 @@ const Ibadyat = () => {
         )}
       </Container>
 
-      {/* Modal for detailed information */}
+      {/* Enhanced Modal for detailed information */}
       <Modal show={showModal} onHide={closeModal} size="lg" centered>
         {selectedTopic && (
           <>
-            <Modal.Header closeButton>
+            <Modal.Header closeButton className="modal-header-custom">
               <Modal.Title>
                 {React.createElement(selectedTopic.icon, { 
                   className: "me-2", 
@@ -288,7 +341,7 @@ const Ibadyat = () => {
                 {selectedTopic.title}
               </Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body className="modal-body-custom">
               <div className="mb-4">
                 <h5>Description</h5>
                 <p>{selectedTopic.content.description}</p>
@@ -351,7 +404,7 @@ const Ibadyat = () => {
                 </div>
               )}
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer className="modal-footer-custom">
               <Button variant="secondary" onClick={closeModal}>
                 Close
               </Button>
