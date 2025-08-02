@@ -1,16 +1,85 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Modal, Button, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Modal, ProgressBar } from 'react-bootstrap';
 import { motion } from 'framer-motion';
-import { FaPray, FaKaaba, FaStar, FaMoon, FaClock, FaExclamationTriangle, FaMosque, FaCalendarAlt } from 'react-icons/fa';
+import { 
+  FaMosque, 
+  FaPray, 
+  FaHands, 
+  FaStar, 
+  FaBook, 
+  FaHeart, 
+  FaClock, 
+  FaCalendarAlt,
+  FaMapMarkerAlt,
+  FaSun,
+  FaMoon,
+  FaCloud,
+  FaCloudSun,
+  FaCloudMoon
+} from 'react-icons/fa';
 import { getPrayerTimes } from '../utils/prayerTimes';
 
 const Ibadyat = () => {
-  const [prayerTimes, setPrayerTimes] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [prayerTimes, setPrayerTimes] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPrayer, setCurrentPrayer] = useState(null);
+  const [nextPrayer, setNextPrayer] = useState(null);
+  const [timeUntilNext, setTimeUntilNext] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [selectedIbadyat, setSelectedIbadyat] = useState(null);
+
+  const convertToMinutes = (timeStr) => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  const getCurrentPrayer = (times) => {
+    const now = new Date();
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    
+    const prayers = [
+      { name: 'Fajr', time: convertToMinutes(times.Fajr), icon: FaSun },
+      { name: 'Dhuhr', time: convertToMinutes(times.Dhuhr), icon: FaCloudSun },
+      { name: 'Asr', time: convertToMinutes(times.Asr), icon: FaCloud },
+      { name: 'Maghrib', time: convertToMinutes(times.Maghrib), icon: FaMoon },
+      { name: 'Isha', time: convertToMinutes(times.Isha), icon: FaCloudMoon }
+    ];
+
+    let current = prayers[prayers.length - 1];
+    let next = prayers[0];
+
+    for (let i = 0; i < prayers.length; i++) {
+      if (currentTime < prayers[i].time) {
+        current = i > 0 ? prayers[i - 1] : prayers[prayers.length - 1];
+        next = prayers[i];
+        break;
+      }
+    }
+
+    return { current, next };
+  };
+
+  const formatTimeUntil = (nextPrayer) => {
+    const now = new Date();
+    const nextTime = new Date();
+    const [hours, minutes] = nextPrayer.time.split(':').map(Number);
+    nextTime.setHours(hours, minutes, 0, 0);
+    
+    if (nextTime <= now) {
+      nextTime.setDate(nextTime.getDate() + 1);
+    }
+    
+    const diff = nextTime - now;
+    const hoursUntil = Math.floor(diff / (1000 * 60 * 60));
+    const minutesUntil = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hoursUntil > 0) {
+      return `${hoursUntil}h ${minutesUntil}m`;
+    } else {
+      return `${minutesUntil}m`;
+    }
+  };
 
   useEffect(() => {
     const fetchPrayerTimes = async () => {
@@ -18,32 +87,15 @@ const Ibadyat = () => {
         setLoading(true);
         const times = await getPrayerTimes();
         setPrayerTimes(times);
-        
-        // Determine current prayer
-        const now = new Date();
-        const currentTime = now.getHours() * 60 + now.getMinutes();
-        const prayers = [
-          { name: 'Fajr', time: convertToMinutes(times.Fajr) },
-          { name: 'Dhuhr', time: convertToMinutes(times.Dhuhr) },
-          { name: 'Asr', time: convertToMinutes(times.Asr) },
-          { name: 'Maghrib', time: convertToMinutes(times.Maghrib) },
-          { name: 'Isha', time: convertToMinutes(times.Isha) }
-        ];
-        
-        let current = prayers[prayers.length - 1];
-        for (let i = 0; i < prayers.length; i++) {
-          if (currentTime < prayers[i].time) {
-            current = i > 0 ? prayers[i - 1] : prayers[prayers.length - 1];
-            break;
-          }
-        }
+
+        const { current, next } = getCurrentPrayer(times);
         setCurrentPrayer(current);
-        
+        setNextPrayer(next);
+
         setError(null);
       } catch (err) {
         console.error('Error fetching prayer times:', err);
         setError('Failed to load prayer times. Please try again later.');
-        // Set fallback prayer times for major cities
         const fallbackTimes = {
           Fajr: '05:30',
           Dhuhr: '12:15',
@@ -52,367 +104,308 @@ const Ibadyat = () => {
           Isha: '19:00'
         };
         setPrayerTimes(fallbackTimes);
+        const { current, next } = getCurrentPrayer(fallbackTimes);
+        setCurrentPrayer(current);
+        setNextPrayer(next);
       } finally {
         setLoading(false);
       }
     };
+
     fetchPrayerTimes();
-  }, []);
-
-  const convertToMinutes = (timeString) => {
-    const [time, modifier] = timeString.split(' ');
-    let [hours, minutes] = time.split(':').map(Number);
     
-    if (modifier === 'PM' && hours !== 12) {
-      hours += 12;
-    } else if (modifier === 'AM' && hours === 12) {
-      hours = 0;
-    }
-    
-    return hours * 60 + minutes;
-  };
-
-  // Use useMemo or create ibadyatData inside useEffect to ensure it updates when prayerTimes changes
-  const getIbadyatData = () => {
-    return {
-      prayer: {
-        title: "Prayer (Salah)",
-        icon: FaPray,
-        color: "#4a7c59",
-        content: {
-          description: "Prayer is the second pillar of Islam and the direct link between the worshipper and Allah. It is performed five times a day at specific times.",
-          importance: [
-            "Five daily prayers are obligatory for every Muslim",
-            "Prayer purifies the soul and brings peace to the heart",
-            "It is the key to success in this world and the hereafter",
-            "Prayer strengthens our connection with Allah",
-            "It serves as a reminder of our purpose in life"
-          ],
-          prayers: prayerTimes ? Object.entries(prayerTimes).filter(([key]) => key !== 'date') : [],
-          tips: [
-            "Perform Wudu (ablution) before prayer",
-            "Face the Qibla (direction of Mecca)",
-            "Pray with concentration and humility",
-            "Read Quran and make Dua after prayer",
-            "Try to pray in congregation when possible"
-          ]
-        }
-      },
-      hajj: {
-        title: "Hajj",
-        icon: FaKaaba,
-        color: "#8b4513",
-        content: {
-          description: "Hajj is the fifth pillar of Islam and a once-in-a-lifetime obligation for those who are physically and financially able.",
-          importance: [
-            "Pilgrimage to the holy city of Mecca",
-            "Performed during the month of Dhul-Hijjah",
-            "Purifies the soul and forgives sins",
-            "Brings together Muslims from all over the world",
-            "Strengthens the bond of Islamic brotherhood"
-          ],
-          rituals: [
-            "Ihram - Sacred state of purity",
-            "Tawaf - Circumambulation of Kaaba",
-            "Sa'i - Walking between Safa and Marwah",
-            "Standing at Arafat",
-            "Symbolic stoning of the devil",
-            "Sacrifice of an animal",
-            "Tawaf al-Ifadah"
-          ],
-          tips: [
-            "Prepare spiritually and physically",
-            "Learn about the rituals beforehand",
-            "Pack appropriate clothing",
-            "Stay hydrated and take care of health",
-            "Make sincere supplications"
-          ]
-        }
-      },
-      umrah: {
-        title: "Umrah",
-        icon: FaStar,
-        color: "#ff6b35",
-        content: {
-          description: "Umrah is a pilgrimage to Mecca that can be performed at any time of the year. It is often called the 'lesser pilgrimage'.",
-          importance: [
-            "Voluntary act of worship with great reward",
-            "Can be performed throughout the year",
-            "Purifies the soul and brings spiritual peace",
-            "Opportunity to visit the holy sites",
-            "Preparation for Hajj"
-          ],
-          rituals: [
-            "Ihram - Entering the sacred state",
-            "Tawaf - Seven rounds around Kaaba",
-            "Sa'i - Walking between Safa and Marwah hills",
-            "Cutting or trimming hair (Halq or Taqsir)"
-          ],
-          tips: [
-            "Choose the right time to avoid crowds",
-            "Book through licensed travel agents",
-            "Learn the supplications (Duas)",
-            "Respect the sanctity of the holy places",
-            "Take advantage of spiritual opportunities"
-          ]
-        }
-      },
-      fasting: {
-        title: "Fasting (Sawm)",
-        icon: FaMoon,
-        color: "#663399",
-        content: {
-          description: "Fasting during Ramadan is the fourth pillar of Islam, involving abstinence from food, drink, and other physical needs from dawn to sunset.",
-          importance: [
-            "Develops self-control and discipline",
-            "Increases empathy for the less fortunate",
-            "Purifies the soul and body",
-            "Brings spiritual cleansing and closeness to Allah",
-            "Builds community spirit and unity"
-          ],
-          rules: [
-            "Fast from dawn (Fajr) to sunset (Maghrib)",
-            "Abstain from food, drink, and marital relations",
-            "Avoid negative behaviors and thoughts",
-            "Increase prayers and Quran recitation",
-            "Give charity (Zakat) and help others"
-          ],
-          tips: [
-            "Have a healthy Suhur (pre-dawn meal)",
-            "Break fast with dates and water",
-            "Avoid overeating during Iftar",
-            "Increase spiritual activities",
-            "Be patient and maintain good character"
-          ]
-        }
+    // Update time until next prayer every minute
+    const interval = setInterval(() => {
+      if (nextPrayer) {
+        setTimeUntilNext(formatTimeUntil(nextPrayer));
       }
-    };
-  };
+    }, 60000);
 
-  const openModal = (topic) => {
-    try {
-      setSelectedTopic(topic);
-      setShowModal(true);
-    } catch (err) {
-      console.error('Error opening modal:', err);
-      setError('Failed to open details. Please try again.');
+    return () => clearInterval(interval);
+  }, [nextPrayer]);
+
+  useEffect(() => {
+    if (nextPrayer) {
+      setTimeUntilNext(formatTimeUntil(nextPrayer));
     }
-  };
+  }, [nextPrayer]);
 
-  const closeModal = () => {
-    setShowModal(false);
-    setSelectedTopic(null);
-  };
+  const ibadyatData = [
+    {
+      id: 1,
+      title: 'Salah (Prayer)',
+      description: 'The five daily prayers are the foundation of Islamic worship',
+      icon: FaPray,
+      color: '#4CAF50',
+      details: {
+        fajr: 'Dawn prayer - 2 rak\'ahs',
+        dhuhr: 'Noon prayer - 4 rak\'ahs',
+        asr: 'Afternoon prayer - 4 rak\'ahs',
+        maghrib: 'Sunset prayer - 3 rak\'ahs',
+        isha: 'Night prayer - 4 rak\'ahs'
+      }
+    },
+    {
+      id: 2,
+      title: 'Du\'a (Supplication)',
+      description: 'Personal prayers and supplications to Allah',
+      icon: FaHands,
+      color: '#2196F3',
+      details: {
+        morning: 'Morning supplications',
+        evening: 'Evening supplications',
+        beforeMeal: 'Before eating',
+        afterMeal: 'After eating',
+        enteringHome: 'When entering home',
+        leavingHome: 'When leaving home'
+      }
+    },
+    {
+      id: 3,
+      title: 'Dhikr (Remembrance)',
+      description: 'Remembrance of Allah through various forms',
+      icon: FaHeart,
+      color: '#9C27B0',
+      details: {
+        subhanallah: 'Glory be to Allah - 33 times',
+        alhamdulillah: 'Praise be to Allah - 33 times',
+        allahuAkbar: 'Allah is the Greatest - 33 times',
+        laIlaahaIllallah: 'There is no god but Allah - 100 times'
+      }
+    },
+    {
+      id: 4,
+      title: 'Tasbih (Prayer Beads)',
+      description: 'Counting dhikr with prayer beads',
+      icon: FaStar,
+      color: '#FF9800',
+      details: {
+        morning: 'Morning tasbih - 100 times',
+        evening: 'Evening tasbih - 100 times',
+        afterPrayer: 'After each prayer',
+        special: 'Special occasions and needs'
+      }
+    },
+    {
+      id: 5,
+      title: 'Quran Recitation',
+      description: 'Reading and memorizing the Holy Quran',
+      icon: FaBook,
+      color: '#E91E63',
+      details: {
+        daily: 'Daily recitation - minimum 1 juz',
+        memorization: 'Memorization of verses',
+        tafsir: 'Understanding and interpretation',
+        reflection: 'Deep reflection on meanings'
+      }
+    },
+    {
+      id: 6,
+      title: 'Sadaqah (Charity)',
+      description: 'Giving charity and helping others',
+      icon: FaHeart,
+      color: '#00BCD4',
+      details: {
+        daily: 'Daily charity - even a smile',
+        monthly: 'Monthly contributions',
+        special: 'Special occasions',
+        emergency: 'Emergency relief'
+      }
+    }
+  ];
 
-  const ibadyatData = getIbadyatData();
+  const handleIbadyatClick = (ibadyat) => {
+    setSelectedIbadyat(ibadyat);
+    setShowModal(true);
+  };
 
   return (
-    <div style={{ paddingTop: '100px', minHeight: '100vh' }}>
-      <Container>
-        <Row>
+    <Container className="py-5">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <Row className="mb-5">
+          <Col>
+            <h1 className="text-center mb-4">
+              <FaMosque className="me-3" style={{ color: 'var(--primary-color)' }} />
+              Islamic Acts of Worship
+            </h1>
+            <p className="text-center text-muted lead">
+              Discover and practice the various forms of Islamic worship and devotion
+            </p>
+          </Col>
+        </Row>
+
+        {/* Enhanced Prayer Times Card */}
+        <Row className="mb-5">
           <Col>
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ delay: 0.2 }}
             >
-              <h1 className="text-center mb-4">العبادات</h1>
-              <p className="text-center mb-5">Acts of Worship in Islam</p>
-            </motion.div>
-          </Col>
-        </Row>
-
-        {/* Error Alert */}
-        {error && (
-          <Row className="mb-4">
-            <Col>
-              <Alert variant="warning" dismissible onClose={() => setError(null)}>
-                <FaExclamationTriangle className="me-2" />
-                {error}
-              </Alert>
-            </Col>
-          </Row>
-        )}
-
-        {/* Enhanced Prayer Times Section */}
-        {prayerTimes && !loading && (
-          <Row className="mb-5">
-            <Col>
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <Card className="prayer-times-card">
-                  <Card.Header className="prayer-times-header">
-                    <FaClock className="me-2" />
-                    Today's Prayer Times - Gujranwala, Lahore, Islamabad
-                  </Card.Header>
-                  <Card.Body>
+              <Card className="prayer-times-card">
+                <Card.Header className="prayer-times-header">
+                  <div className="d-flex align-items-center justify-content-between">
+                    <div>
+                      <FaClock className="me-2" />
+                      <span>Prayer Times - Gujranwala</span>
+                    </div>
+                    <div className="d-flex align-items-center">
+                      <FaMapMarkerAlt className="me-2" />
+                      <small>Location: Gujranwala, Pakistan</small>
+                    </div>
+                  </div>
+                </Card.Header>
+                <Card.Body>
+                  {loading ? (
+                    <div className="text-center py-4">
+                      <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                      </div>
+                      <p className="mt-2">Loading prayer times...</p>
+                    </div>
+                  ) : error ? (
+                    <div className="text-center py-4">
+                      <p className="text-danger">{error}</p>
+                    </div>
+                  ) : (
                     <div className="prayer-times-grid">
                       {Object.entries(prayerTimes).map(([prayer, time]) => {
-                        if (prayer === 'date') return null;
-                        const isCurrent = currentPrayer && currentPrayer.name === prayer;
+                        const isCurrent = currentPrayer?.name === prayer;
+                        const IconComponent = currentPrayer?.icon || FaClock;
+                        
                         return (
-                          <div key={prayer} className={`prayer-time-item ${isCurrent ? 'current-prayer' : ''}`}>
+                          <motion.div
+                            key={prayer}
+                            className={`prayer-time-item ${isCurrent ? 'current-prayer' : ''}`}
+                            whileHover={{ scale: 1.05 }}
+                            transition={{ duration: 0.3 }}
+                          >
                             <div className="prayer-icon">
-                              <FaMosque />
+                              <IconComponent />
                             </div>
                             <div className="prayer-info">
                               <h5>{prayer}</h5>
                               <h4>{time}</h4>
-                              {isCurrent && <span className="current-badge">Current</span>}
+                              {isCurrent && (
+                                <span className="current-badge">
+                                  Current Prayer
+                                </span>
+                              )}
                             </div>
-                          </div>
+                          </motion.div>
                         );
                       })}
                     </div>
+                  )}
+                  
+                  {nextPrayer && (
                     <div className="prayer-location-info">
-                      <small className="text-muted">
-                        <FaCalendarAlt className="me-1" />
-                        Times calculated for Gujranwala, Pakistan (University of Islamic Sciences, Karachi method)
-                      </small>
+                      <div className="d-flex align-items-center justify-content-center mb-2">
+                        <FaClock className="me-2" />
+                        <strong>Next Prayer: {nextPrayer.name}</strong>
+                      </div>
+                      <div className="d-flex align-items-center justify-content-center">
+                        <small className="text-muted">
+                          Time until {nextPrayer.name}: {timeUntilNext}
+                        </small>
+                      </div>
+                    </div>
+                  )}
+                </Card.Body>
+              </Card>
+            </motion.div>
+          </Col>
+        </Row>
+
+        {/* Enhanced Ibadyat Grid */}
+        <Row className="ibadyat-grid">
+          {ibadyatData.map((ibadyat, index) => (
+            <Col lg={6} md={6} key={ibadyat.id} className="mb-4">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card 
+                  className="ibadyat-card"
+                  onClick={() => handleIbadyatClick(ibadyat)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <Card.Body className="text-center">
+                    <div className="ibadyat-icon-container">
+                      <ibadyat.icon 
+                        className="ibadyat-icon"
+                        style={{ color: ibadyat.color }}
+                      />
+                    </div>
+                    <div className="ibadyat-content">
+                      <h4>{ibadyat.title}</h4>
+                      <p>{ibadyat.description}</p>
                     </div>
                   </Card.Body>
                 </Card>
               </motion.div>
             </Col>
-          </Row>
-        )}
-
-        {/* Enhanced Ibadyat Cards Grid */}
-        <Row className="ibadyat-grid">
-          {Object.entries(ibadyatData).map(([key, item], index) => {
-            const IconComponent = item.icon;
-            return (
-              <Col key={key} lg={6} md={6} className="mb-4">
-                <motion.div
-                  initial={{ opacity: 0, y: 50 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.2 }}
-                  whileHover={{ scale: 1.02, y: -5 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <div 
-                    className="ibadyat-card"
-                    onClick={() => openModal(item)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <div className="ibadyat-icon-container">
-                      <IconComponent 
-                        className="ibadyat-icon" 
-                        style={{ color: item.color }}
-                      />
-                    </div>
-                    <div className="ibadyat-content">
-                      <h4>{item.title}</h4>
-                      <p>Click to learn more about this act of worship</p>
-                    </div>
-                  </div>
-                </motion.div>
-              </Col>
-            );
-          })}
+          ))}
         </Row>
+      </motion.div>
 
-        {/* Loading state */}
-        {loading && (
-          <Row className="mt-5">
-            <Col className="text-center">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Loading prayer times...</span>
+      {/* Enhanced Modal */}
+      <Modal 
+        show={showModal} 
+        onHide={() => setShowModal(false)}
+        size="lg"
+        className="modal-custom"
+      >
+        <Modal.Header className="modal-header-custom">
+          <Modal.Title>
+            {selectedIbadyat && (
+              <div className="d-flex align-items-center">
+                <selectedIbadyat.icon 
+                  className="me-3" 
+                  style={{ color: selectedIbadyat.color }}
+                />
+                {selectedIbadyat.title}
               </div>
-              <p className="mt-2">Loading prayer times...</p>
-            </Col>
-          </Row>
-        )}
-      </Container>
-
-      {/* Enhanced Modal for detailed information */}
-      <Modal show={showModal} onHide={closeModal} size="lg" centered>
-        {selectedTopic && (
-          <>
-            <Modal.Header closeButton className="modal-header-custom">
-              <Modal.Title>
-                {React.createElement(selectedTopic.icon, { 
-                  className: "me-2", 
-                  style: { color: selectedTopic.color } 
-                })}
-                {selectedTopic.title}
-              </Modal.Title>
-            </Modal.Header>
-            <Modal.Body className="modal-body-custom">
-              <div className="mb-4">
-                <h5>Description</h5>
-                <p>{selectedTopic.content.description}</p>
+            )}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="modal-body-custom">
+          {selectedIbadyat && (
+            <div>
+              <p className="lead mb-4">{selectedIbadyat.description}</p>
+              <div className="row">
+                {Object.entries(selectedIbadyat.details).map(([key, value]) => (
+                  <div key={key} className="col-md-6 mb-3">
+                    <Card className="detail-card">
+                      <Card.Body>
+                        <h6 className="text-capitalize">{key.replace(/([A-Z])/g, ' $1')}</h6>
+                        <p className="mb-0">{value}</p>
+                      </Card.Body>
+                    </Card>
+                  </div>
+                ))}
               </div>
-
-              <div className="mb-4">
-                <h5>Importance</h5>
-                <ul>
-                  {selectedTopic.content.importance.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-
-              {selectedTopic.content.prayers && selectedTopic.content.prayers.length > 0 && (
-                <div className="mb-4">
-                  <h5>Prayer Times</h5>
-                  <Row>
-                    {selectedTopic.content.prayers.map(([prayer, time]) => (
-                      <Col md={6} key={prayer} className="mb-2">
-                        <div className="prayer-time-display">
-                          <strong>{prayer}:</strong> <span className="time-badge">{time}</span>
-                        </div>
-                      </Col>
-                    ))}
-                  </Row>
-                </div>
-              )}
-
-              {selectedTopic.content.rituals && (
-                <div className="mb-4">
-                  <h5>Rituals</h5>
-                  <ul>
-                    {selectedTopic.content.rituals.map((ritual, index) => (
-                      <li key={index}>{ritual}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {selectedTopic.content.rules && (
-                <div className="mb-4">
-                  <h5>Rules and Guidelines</h5>
-                  <ul>
-                    {selectedTopic.content.rules.map((rule, index) => (
-                      <li key={index}>{rule}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {selectedTopic.content.tips && (
-                <div className="mb-4">
-                  <h5>Tips and Recommendations</h5>
-                  <ul>
-                    {selectedTopic.content.tips.map((tip, index) => (
-                      <li key={index}>{tip}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </Modal.Body>
-            <Modal.Footer className="modal-footer-custom">
-              <Button variant="secondary" onClick={closeModal}>
-                Close
-              </Button>
-            </Modal.Footer>
-          </>
-        )}
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer className="modal-footer-custom">
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Close
+          </Button>
+          <Button 
+            variant="primary"
+            onClick={() => setShowModal(false)}
+          >
+            Learn More
+          </Button>
+        </Modal.Footer>
       </Modal>
-    </div>
+    </Container>
   );
 };
 
