@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Modal, Button, Alert, Badge } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import { FaPray, FaKaaba, FaStar, FaMoon, FaClock, FaExclamationTriangle, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
-import { getPrayerTimes, getCurrentPrayer } from '../utils/prayerTimes';
+import { getPrayerTimes, getCurrentPrayer, getCurrentCity } from '../utils/prayerTimes';
 
 const Ibadyat = () => {
   const [prayerTimes, setPrayerTimes] = useState(null);
@@ -12,30 +12,35 @@ const Ibadyat = () => {
   const [error, setError] = useState(null);
   const [currentPrayerInfo, setCurrentPrayerInfo] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentCity, setCurrentCity] = useState(getCurrentCity());
 
   useEffect(() => {
     const fetchPrayerTimes = async () => {
       try {
         setLoading(true);
-        const times = await getPrayerTimes();
+        setError(null);
+        const times = await getPrayerTimes(new Date(), currentCity);
         setPrayerTimes(times);
         setCurrentPrayerInfo(getCurrentPrayer(times));
-        setError(null);
       } catch (err) {
         console.error('Error fetching prayer times:', err);
         setError('Failed to load prayer times. Please try again later.');
         // Set fallback prayer times for major cities
-        setPrayerTimes({
+        const fallbackTimes = {
           Fajr: '05:30',
           Dhuhr: '12:15',
           Asr: '15:45',
           Maghrib: '18:30',
-          Isha: '20:00'
-        });
+          Isha: '20:00',
+          city: currentCity === 'lahore' ? 'Lahore' : currentCity === 'islamabad' ? 'Islamabad' : 'Gujranwala'
+        };
+        setPrayerTimes(fallbackTimes);
+        setCurrentPrayerInfo(getCurrentPrayer(fallbackTimes));
       } finally {
         setLoading(false);
       }
     };
+    
     fetchPrayerTimes();
 
     // Update current prayer info and time every minute
@@ -55,7 +60,7 @@ const Ibadyat = () => {
       clearInterval(interval);
       clearInterval(timeInterval);
     };
-  }, [prayerTimes]);
+  }, [currentCity]); // Remove prayerTimes dependency to prevent infinite loop
 
   // Use useMemo or create ibadyatData inside useEffect to ensure it updates when prayerTimes changes
   const getIbadyatData = () => {

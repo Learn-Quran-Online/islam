@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Toast, ToastContainer } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import { FaSearch, FaClock, FaPlay, FaHeart, FaDonate, FaMosque, FaDove, FaStar, FaExclamationTriangle, FaCalendarAlt, FaCompass, FaHands } from 'react-icons/fa';
-import { getPrayerTimes, getCurrentPrayer, formatTimeRemaining } from '../utils/prayerTimes';
+import { getPrayerTimes, getCurrentPrayer, formatTimeRemaining, getCurrentCity } from '../utils/prayerTimes';
 import { quranVerse, islamicVideos, searchableContent } from '../data/quranData';
 
 const Home = () => {
@@ -15,11 +15,12 @@ const Home = () => {
   const [notifications, setNotifications] = useState([]);
   const [islamicDate, setIslamicDate] = useState('');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentCity, setCurrentCity] = useState(getCurrentCity());
 
   useEffect(() => {
     const fetchPrayerData = async () => {
       try {
-        const times = await getPrayerTimes();
+        const times = await getPrayerTimes(new Date(), currentCity);
         setPrayerTimes(times);
         setCurrentPrayerInfo(getCurrentPrayer(times));
         setLoading(false);
@@ -61,7 +62,7 @@ const Home = () => {
       clearInterval(interval);
       clearInterval(timeInterval);
     };
-  }, [prayerTimes]);
+  }, [currentCity]);
 
   const showNotification = (message, type = 'info') => {
     const id = Date.now();

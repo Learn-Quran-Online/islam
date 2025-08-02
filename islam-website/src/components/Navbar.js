@@ -62,49 +62,58 @@ const Navbar = ({ theme, userProfile }) => {
               Quran
             </Nav.Link>
 
-            <NavDropdown 
-              title={
-                <span>
-                  <FaBook className="me-1" />
-                  Islamic Tools
-                </span>
-              } 
-              id="islamic-tools-dropdown"
-              className="nav-dropdown"
-            >
-              <NavDropdown.Item as={Link} to="/dua">
-                <FaHands className="me-2" />
-                Duas & Supplications
-              </NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/tasbih">
-                <FaStar className="me-2" />
-                Digital Tasbih
-              </NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/qibla">
-                <FaCompass className="me-2" />
-                Qibla Direction
-              </NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/calendar">
-                <FaCalendarAlt className="me-2" />
-                Islamic Calendar
-              </NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/names">
-                <FaHeart className="me-2" />
-                99 Names of Allah
-              </NavDropdown.Item>
-              <NavDropdown.Item as={Link} to="/times">
-                <FaClock className="me-2" />
-                Prayer Times
-              </NavDropdown.Item>
-            </NavDropdown>
-            
             <Nav.Link 
               as={Link} 
-              to="/settings" 
-              className={isActive('/settings') ? 'active' : ''}
+              to="/dua" 
+              className={isActive('/dua') ? 'active' : ''}
             >
-              <FaCog className="me-1" />
-              Settings
+              <FaHands className="me-1" />
+              Duas
+            </Nav.Link>
+
+            <Nav.Link 
+              as={Link} 
+              to="/tasbih" 
+              className={isActive('/tasbih') ? 'active' : ''}
+            >
+              <FaStar className="me-1" />
+              Tasbih
+            </Nav.Link>
+
+            <Nav.Link 
+              as={Link} 
+              to="/qibla" 
+              className={isActive('/qibla') ? 'active' : ''}
+            >
+              <FaCompass className="me-1" />
+              Qibla
+            </Nav.Link>
+
+            <Nav.Link 
+              as={Link} 
+              to="/calendar" 
+              className={isActive('/calendar') ? 'active' : ''}
+            >
+              <FaCalendarAlt className="me-1" />
+              Calendar
+            </Nav.Link>
+
+            <Nav.Link 
+              as={Link} 
+              to="/names" 
+              className={isActive('/names') ? 'active' : ''}
+            >
+              <FaHeart className="me-1" />
+              Names
+            </Nav.Link>
+
+            <Nav.Link 
+              as={Link} 
+              to="/times" 
+              className={isActive('/times') ? 'active' : ''}
+            >
+              <FaClock className="me-1" />
+              Prayer Times
             </Nav.Link>
           </Nav>
           
