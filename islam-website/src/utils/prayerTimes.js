@@ -1,21 +1,56 @@
 import axios from 'axios';
 
-// Gujranwala coordinates
-const GUJRANWALA_LAT = 32.1877;
-const GUJRANWALA_LNG = 74.1945;
+// City coordinates
+const CITIES = {
+  gujranwala: {
+    name: 'Gujranwala',
+    lat: 32.1877,
+    lng: 74.1945
+  },
+  lahore: {
+    name: 'Lahore',
+    lat: 31.5204,
+    lng: 74.3587
+  },
+  islamabad: {
+    name: 'Islamabad',
+    lat: 33.6844,
+    lng: 73.0479
+  }
+};
 
-export const getPrayerTimes = async (date = new Date()) => {
+// Default city
+let currentCity = 'gujranwala';
+
+export const setCurrentCity = (city) => {
+  if (CITIES[city]) {
+    currentCity = city;
+    localStorage.setItem('selectedCity', city);
+  }
+};
+
+export const getCurrentCity = () => {
+  return currentCity;
+};
+
+export const getAvailableCities = () => {
+  return CITIES;
+};
+
+export const getPrayerTimes = async (date = new Date(), city = currentCity) => {
   try {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
     
+    const cityData = CITIES[city] || CITIES.gujranwala;
+    
     const response = await axios.get(
       `https://api.aladhan.com/v1/timings/${day}-${month}-${year}`,
       {
         params: {
-          latitude: GUJRANWALA_LAT,
-          longitude: GUJRANWALA_LNG,
+          latitude: cityData.lat,
+          longitude: cityData.lng,
           method: 1, // University of Islamic Sciences, Karachi
           school: 1, // Hanafi
         }
@@ -30,18 +65,43 @@ export const getPrayerTimes = async (date = new Date()) => {
       Asr: timings.Asr,
       Maghrib: timings.Maghrib,
       Isha: timings.Isha,
-      date: response.data.data.date.readable
+      date: response.data.data.date.readable,
+      city: cityData.name
     };
   } catch (error) {
     console.error('Error fetching prayer times:', error);
-    // Fallback prayer times for Gujranwala
+    // Fallback prayer times for the selected city
+    const fallbackTimes = {
+      gujranwala: {
+        Fajr: '05:30',
+        Dhuhr: '12:15',
+        Asr: '15:45',
+        Maghrib: '17:30',
+        Isha: '19:00'
+      },
+      lahore: {
+        Fajr: '05:25',
+        Dhuhr: '12:10',
+        Asr: '15:40',
+        Maghrib: '17:25',
+        Isha: '18:55'
+      },
+      islamabad: {
+        Fajr: '05:35',
+        Dhuhr: '12:20',
+        Asr: '15:50',
+        Maghrib: '17:35',
+        Isha: '19:05'
+      }
+    };
+    
+    const cityData = CITIES[city] || CITIES.gujranwala;
+    const times = fallbackTimes[city] || fallbackTimes.gujranwala;
+    
     return {
-      Fajr: '05:30',
-      Dhuhr: '12:15',
-      Asr: '15:45',
-      Maghrib: '17:30',
-      Isha: '19:00',
-      date: date.toLocaleDateString()
+      ...times,
+      date: date.toLocaleDateString(),
+      city: cityData.name
     };
   }
 };

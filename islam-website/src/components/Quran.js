@@ -365,6 +365,16 @@ const Quran = () => {
                           </p>
                         </div>
                       )}
+                      
+                      {/* Note about verse count */}
+                      {selectedSurah?.text && selectedSurah.text.length < selectedSurah.verses && (
+                        <div className="text-center mt-4 p-3 bg-light rounded">
+                          <small className="text-muted">
+                            <strong>Note:</strong> Currently showing {selectedSurah.text.length} out of {selectedSurah.verses} verses. 
+                            More verses are being added to provide complete surah text.
+                          </small>
+                        </div>
+                      )}
                     </Card.Body>
                   </Card>
                 </motion.div>
