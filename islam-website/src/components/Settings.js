@@ -1,11 +1,19 @@
 import React, { useState, useRef } from 'react';
-import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap';
-import { motion } from 'framer-motion';
-import { FaSun, FaMoon, FaUser, FaUpload, FaPalette, FaCog } from 'react-icons/fa';
+import { Container, Row, Col, Card, Button, Alert, Offcanvas } from 'react-bootstrap';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FaSun, FaMoon, FaUser, FaUpload, FaPalette, FaCog, FaBars, FaTimes, FaBell, FaVolumeUp, FaVolumeMute } from 'react-icons/fa';
 
 const Settings = ({ theme, toggleTheme, userProfile, updateProfile }) => {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    const saved = localStorage.getItem('prayerSoundEnabled');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [notificationEnabled, setNotificationEnabled] = useState(() => {
+    return localStorage.getItem('notificationEnabled') !== 'false';
+  });
   const fileInputRef = useRef(null);
 
   const handleProfilePictureChange = (event) => {
@@ -58,73 +66,118 @@ const Settings = ({ theme, toggleTheme, userProfile, updateProfile }) => {
     }
   };
 
-  return (
-    <div style={{ paddingTop: '100px', minHeight: '100vh' }}>
-      <Container>
-        <Row>
-          <Col>
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <h1 className="text-center mb-4">
-                <FaCog className="me-2" />
-                الإعدادات
-              </h1>
-              <p className="text-center mb-5">Settings & Preferences</p>
-            </motion.div>
-          </Col>
-        </Row>
+  const toggleSound = () => {
+    const newSoundEnabled = !soundEnabled;
+    setSoundEnabled(newSoundEnabled);
+    localStorage.setItem('prayerSoundEnabled', JSON.stringify(newSoundEnabled));
+    setAlertMessage(`Prayer sounds ${newSoundEnabled ? 'enabled' : 'disabled'}`);
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 3000);
+  };
 
-        <div className="settings-container">
-          {showAlert && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-4"
-            >
-              <Alert variant="info" onClose={() => setShowAlert(false)} dismissible>
-                {alertMessage}
-              </Alert>
-            </motion.div>
-          )}
+  const toggleNotifications = () => {
+    const newNotificationEnabled = !notificationEnabled;
+    setNotificationEnabled(newNotificationEnabled);
+    localStorage.setItem('notificationEnabled', newNotificationEnabled.toString());
+    setAlertMessage(`Notifications ${newNotificationEnabled ? 'enabled' : 'disabled'}`);
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 3000);
+  };
+
+  const handleSidebarToggle = () => {
+    setShowSidebar(!showSidebar);
+  };
+
+  return (
+    <>
+      {/* Settings Toggle Button */}
+      <motion.button
+        className="settings-toggle-btn"
+        onClick={handleSidebarToggle}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        title="Settings"
+      >
+        <FaCog />
+      </motion.button>
+
+      {/* Settings Sidebar */}
+      <Offcanvas 
+        show={showSidebar} 
+        onHide={() => setShowSidebar(false)}
+        placement="end"
+        className="settings-sidebar"
+      >
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>
+            <FaCog className="me-2" />
+            Settings
+          </Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body>
+          <AnimatePresence>
+            {showAlert && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mb-4"
+              >
+                <Alert variant="info" onClose={() => setShowAlert(false)} dismissible>
+                  {alertMessage}
+                </Alert>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Theme Settings */}
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="setting-group">
+              <h5 className="mb-3">
+                <FaPalette className="me-2" />
+                Theme Settings
+              </h5>
+              <div className="d-flex align-items-center justify-content-between">
+                <span>Dark Mode</span>
+                <div className="toggle-switch" onClick={toggleTheme}>
+                  <div className={`toggle-slider ${theme === 'dark' ? 'active' : ''}`}>
+                    {theme === 'dark' ? <FaMoon /> : <FaSun />}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Notification Settings */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
             <div className="setting-group">
-              <h3 className="mb-4">
-                <FaPalette className="me-2" />
-                Appearance
-              </h3>
-              
-              <div className="theme-toggle">
-                <div>
-                  <h5>Theme</h5>
-                  <p className="text-muted">
-                    Choose between light and dark theme for better reading experience
-                  </p>
-                </div>
-                <div className="d-flex align-items-center">
-                  <FaSun className="me-2" style={{ color: theme === 'light' ? '#ffc107' : '#6c757d' }} />
-                  <div 
-                    className={`toggle-switch ${theme === 'dark' ? 'active' : ''}`}
-                    onClick={toggleTheme}
-                  >
-                    <div className="toggle-slider"></div>
+              <h5 className="mb-3">
+                <FaBell className="me-2" />
+                Notifications
+              </h5>
+              <div className="d-flex align-items-center justify-content-between mb-3">
+                <span>Prayer Notifications</span>
+                <div className="toggle-switch" onClick={toggleNotifications}>
+                  <div className={`toggle-slider ${notificationEnabled ? 'active' : ''}`}>
+                    {notificationEnabled ? <FaBell /> : <FaTimes />}
                   </div>
-                  <FaMoon className="ms-2" style={{ color: theme === 'dark' ? '#6f42c1' : '#6c757d' }} />
                 </div>
               </div>
-
-              <div className="mt-3">
-                <small className="text-muted">
-                  Current theme: <strong>{theme === 'light' ? 'Light Mode' : 'Dark Mode'}</strong>
-                </small>
+              <div className="d-flex align-items-center justify-content-between">
+                <span>Prayer Sounds</span>
+                <div className="toggle-switch" onClick={toggleSound}>
+                  <div className={`toggle-slider ${soundEnabled ? 'active' : ''}`}>
+                    {soundEnabled ? <FaVolumeUp /> : <FaVolumeMute />}
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -133,165 +186,101 @@ const Settings = ({ theme, toggleTheme, userProfile, updateProfile }) => {
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.3 }}
           >
             <div className="setting-group">
-              <h3 className="mb-4">
+              <h5 className="mb-3">
                 <FaUser className="me-2" />
-                Profile
-              </h3>
+                Profile Settings
+              </h5>
               
-              <div className="profile-upload">
+              <div className="profile-preview mb-3">
                 {userProfile.profilePicture ? (
                   <img 
                     src={userProfile.profilePicture} 
                     alt="Profile" 
-                    className="profile-preview"
+                    className="profile-pic"
                   />
                 ) : (
-                  <div 
-                    className="profile-preview d-flex align-items-center justify-content-center"
-                    style={{ backgroundColor: 'var(--border-color)' }}
-                  >
-                    <FaUser size={40} color="var(--text-color)" />
+                  <div className="profile-placeholder">
+                    <FaUser />
                   </div>
                 )}
-                
-                <div className="d-flex gap-2">
-                  <Button 
-                    className="upload-btn"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <FaUpload className="me-2" />
-                    {userProfile.profilePicture ? 'Change Picture' : 'Upload Picture'}
-                  </Button>
-                  
-                  {userProfile.profilePicture && (
-                    <Button 
-                      variant="outline-danger"
-                      onClick={removeProfilePicture}
-                    >
-                      Remove
-                    </Button>
-                  )}
-                </div>
-                
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleProfilePictureChange}
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                />
-                
-                <small className="text-muted mt-2">
-                  Supported formats: JPG, PNG, GIF (Max size: 5MB)
-                </small>
               </div>
-            </div>
-          </motion.div>
 
-          {/* App Information */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <div className="setting-group">
-              <h3 className="mb-4">App Information</h3>
-              
-              <Row>
-                <Col md={6}>
-                  <div className="mb-3">
-                    <strong>Version:</strong> 1.0.0
-                  </div>
-                  <div className="mb-3">
-                    <strong>Build:</strong> {new Date().getFullYear()}.{new Date().getMonth() + 1}
-                  </div>
-                </Col>
-                <Col md={6}>
-                  <div className="mb-3">
-                    <strong>Prayer Times:</strong> Gujranwala, Pakistan
-                  </div>
-                  <div className="mb-3">
-                    <strong>Calculation Method:</strong> University of Islamic Sciences, Karachi
-                  </div>
-                </Col>
-              </Row>
+              <div className="d-flex flex-column gap-2">
+                <Button 
+                  variant="outline-primary" 
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <FaUpload className="me-2" />
+                  Upload Picture
+                </Button>
+                
+                {userProfile.profilePicture && (
+                  <Button 
+                    variant="outline-danger" 
+                    size="sm"
+                    onClick={removeProfilePicture}
+                  >
+                    Remove Picture
+                  </Button>
+                )}
+              </div>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleProfilePictureChange}
+                accept="image/*"
+                style={{ display: 'none' }}
+              />
             </div>
           </motion.div>
 
           {/* Data Management */}
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
           >
             <div className="setting-group">
-              <h3 className="mb-4">Data Management</h3>
-              
-              <div className="d-flex flex-column gap-3">
-                <div>
-                  <h5>Clear App Data</h5>
-                  <p className="text-muted mb-2">
-                    This will remove all your settings, profile picture, and preferences.
-                  </p>
-                  <Button 
-                    variant="outline-danger"
-                    onClick={clearAllData}
-                  >
-                    Clear All Data
-                  </Button>
-                </div>
-                
-                <div>
-                  <h5>Privacy</h5>
-                  <p className="text-muted mb-0">
-                    All your data is stored locally on your device. We don't collect or store any personal information on our servers.
-                  </p>
-                </div>
-              </div>
+              <h5 className="mb-3">Data Management</h5>
+              <Button 
+                variant="outline-warning" 
+                size="sm"
+                onClick={clearAllData}
+              >
+                Clear All Data
+              </Button>
             </div>
           </motion.div>
 
-          {/* About Section */}
+          {/* App Info */}
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0 }}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
           >
             <div className="setting-group">
-              <h3 className="mb-4">About Islam360</h3>
-              
-              <p className="mb-3">
-                Islam360 is a comprehensive Islamic companion app designed to help Muslims 
-                in their daily spiritual journey. The app provides prayer times, Quran recitation, 
-                and educational content about Islamic worship.
-              </p>
-              
-              <div className="row">
-                <div className="col-md-6">
-                  <h6>Features:</h6>
-                  <ul className="list-unstyled">
-                    <li>✓ Accurate prayer times</li>
-                    <li>✓ Quran with audio recitation</li>
-                    <li>✓ Islamic worship guidance</li>
-                    <li>✓ Prayer notifications</li>
-                  </ul>
-                </div>
-                <div className="col-md-6">
-                  <h6>Location:</h6>
-                  <p>Configured for Gujranwala, Pakistan</p>
-                  
-                  <h6>Developer:</h6>
-                  <p>Built with ❤️ for the Muslim community</p>
-                </div>
+              <h5 className="mb-3">App Information</h5>
+              <div className="app-info">
+                <p><strong>Version:</strong> 1.0.0</p>
+                <p><strong>Developer:</strong> Islamic App Team</p>
+                <p><strong>Features:</strong></p>
+                <ul className="feature-list">
+                  <li>Prayer Times & Notifications</li>
+                  <li>Quran Reading & Audio</li>
+                  <li>Islamic Tools & Resources</li>
+                  <li>Worship Guidelines</li>
+                </ul>
               </div>
             </div>
           </motion.div>
-        </div>
-      </Container>
-    </div>
+        </Offcanvas.Body>
+      </Offcanvas>
+    </>
   );
 };
 

@@ -98,7 +98,7 @@ const Home = () => {
     try {
       window.open(url, '_blank', 'noopener,noreferrer');
     } catch (error) {
-      showNotification('Failed to open video. Please check your internet connection.', 'error');
+      showNotification('Unable to open video. Please try again.', 'error');
     }
   };
 
@@ -109,31 +109,28 @@ const Home = () => {
   };
 
   const handleIconClick = (type) => {
-    switch(type) {
-      case 'calendar':
-        showNotification('Islamic Calendar feature coming soon!', 'info');
-        break;
-      case 'qibla':
-        showNotification('Qibla Direction: Face towards Mecca, Saudi Arabia', 'info');
-        break;
-      case 'dua':
-        showNotification('Opening Dua collection...', 'info');
-        break;
-      default:
-        showNotification('Feature coming soon!', 'info');
-    }
+    showNotification(`Opening ${type} feature...`, 'info');
+    // Add navigation logic here
   };
 
-  // Create floating particles for background animation
   const createParticles = () => {
-    return Array.from({ length: 15 }, (_, i) => (
-      <div
+    return Array.from({ length: 20 }, (_, i) => (
+      <motion.div
         key={i}
         className="particle"
         style={{
           left: `${Math.random() * 100}%`,
-          animationDelay: `${Math.random() * 8}s`,
-          animationDuration: `${8 + Math.random() * 4}s`
+          animationDelay: `${Math.random() * 8}s`
+        }}
+        animate={{
+          y: [0, -1000],
+          opacity: [0, 0.6, 0],
+          scale: [0, 1, 0]
+        }}
+        transition={{
+          duration: 8 + Math.random() * 4,
+          repeat: Infinity,
+          ease: "linear"
         }}
       />
     ));
@@ -144,7 +141,7 @@ const Home = () => {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
-      hour12: true
+      hour12: false
     });
   };
 
@@ -164,8 +161,15 @@ const Home = () => {
         {createParticles()}
       </div>
 
-      {/* Enhanced Moving Images Section with Prayer Times and Islamic Date */}
+      {/* Enhanced Moving Images Section with Mosque Background */}
       <section className="enhanced-moving-section">
+        {/* Mosque Background */}
+        <div className="mosque-background">
+          <div className="mosque-image"></div>
+          <div className="floating-water"></div>
+          <div className="water-reflection"></div>
+        </div>
+
         {/* Left Side - Current and Next Prayer */}
         <div className="prayer-side">
           {currentPrayerInfo && (
@@ -194,7 +198,7 @@ const Home = () => {
           )}
         </div>
 
-        {/* Center - Welcome Message with Animations */}
+        {/* Center - Welcome Message with Enhanced Animations */}
         <div className="welcome-center">
           <motion.div
             className="moving-mosque"
@@ -219,14 +223,14 @@ const Home = () => {
             <p>Welcome to Your Spiritual Journey</p>
           </motion.div>
 
-          {/* Multiple Flying Birds */}
-          {[...Array(3)].map((_, i) => (
+          {/* Multiple Flying Birds with Enhanced Animation */}
+          {[...Array(5)].map((_, i) => (
             <motion.div
               key={i}
               className="flying-bird"
               style={{
-                left: `${20 + i * 30}%`,
-                top: `${20 + (i % 2) * 30}%`
+                left: `${15 + i * 20}%`,
+                top: `${15 + (i % 3) * 25}%`
               }}
               animate={{ 
                 x: [0, 100, 200, 100, 0],
@@ -234,7 +238,7 @@ const Home = () => {
                 rotate: [0, 15, -15, 10, 0]
               }}
               transition={{ 
-                duration: 12 + i * 2, 
+                duration: 15 + i * 3, 
                 repeat: Infinity, 
                 delay: i * 2,
                 ease: "easeInOut"
@@ -244,14 +248,14 @@ const Home = () => {
             </motion.div>
           ))}
 
-          {/* Floating Stars */}
-          {[...Array(6)].map((_, i) => (
+          {/* Floating Stars with Enhanced Animation */}
+          {[...Array(8)].map((_, i) => (
             <motion.div
               key={i}
               className="floating-star"
               style={{
-                left: `${20 + i * 15}%`,
-                top: `${30 + (i % 3) * 20}%`
+                left: `${10 + i * 12}%`,
+                top: `${20 + (i % 4) * 15}%`
               }}
               animate={{ 
                 scale: [1, 1.3, 1],
@@ -259,9 +263,9 @@ const Home = () => {
                 opacity: [0.3, 1, 0.3]
               }}
               transition={{ 
-                duration: 3, 
+                duration: 4, 
                 repeat: Infinity, 
-                delay: i * 0.5,
+                delay: i * 0.6,
                 ease: "easeInOut"
               }}
             >
@@ -347,9 +351,9 @@ const Home = () => {
         </Container>
       </section>
 
-      <Container className="py-4">
+      <Container className="py-5">
         {/* Enhanced Search Bar */}
-        <Row className="justify-content-center mb-4">
+        <Row className="justify-content-center mb-5">
           <Col lg={8}>
             <motion.div 
               className="search-container"
@@ -373,7 +377,7 @@ const Home = () => {
               {/* Search Results */}
               {showSearchResults && (
                 <motion.div
-                  className="mt-3"
+                  className="mt-4"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
@@ -421,7 +425,7 @@ const Home = () => {
         </Row>
 
         {/* Enhanced Quran Verse */}
-        <Row className="mb-4">
+        <Row className="mb-5">
           <Col>
             <motion.div
               initial={{ opacity: 0, y: 50 }}
@@ -444,7 +448,7 @@ const Home = () => {
         </Row>
 
         {/* Enhanced Islamic Videos */}
-        <Row className="mb-4">
+        <Row className="mb-5">
           <Col>
             <motion.div
               initial={{ opacity: 0 }}
